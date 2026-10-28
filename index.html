@@ -1,0 +1,3230 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B4F5C">
+<title>Report Impianti</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --pri: #0B4F5C;
+  --pri-2: #0E6474;
+  --pri-soft: #E3EFF1;
+  --acc: #F2A93B;
+  --bg: #F2F4F5;
+  --card: #FFFFFF;
+  --ink: #17242A;
+  --ink-2: #4D5D64;
+  --ink-3: #8A989E;
+  --line: #DDE3E6;
+  --red: #C62828;
+  --red-soft: #FDECEA;
+  --green: #2E7D32;
+  --green-soft: #E8F5E9;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16, 40, 48, .06), 0 2px 10px rgba(16, 40, 48, .06);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+body {
+  font-family: Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.4;
+  overscroll-behavior-y: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+svg.i { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.i.sm { width: 18px; height: 18px; }
+
+/* ---------- app bar ---------- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--pri); color: #fff;
+  display: flex; align-items: center; gap: 4px;
+  min-height: 56px; padding-block: 6px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(6px, env(safe-area-inset-right, 0px));
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+.bar.has-back { padding-left: max(4px, env(safe-area-inset-left, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--pri); }
+.bar .ttl { flex: 1; min-width: 0; }
+.bar .ttl b { display: block; font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .ttl small { display: block; font-size: 12.5px; opacity: .78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ib {
+  width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; color: inherit;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+}
+.ib:active { background: rgba(255,255,255,.16); }
+.bar .pill {
+  border: 0; background: var(--acc); color: #2B1B00; font-weight: 600;
+  height: 36px; padding: 0 14px; border-radius: 18px; display: inline-flex; align-items: center; gap: 6px; margin-right: 4px;
+}
+.saved { font-size: 11.5px; opacity: .75; margin-right: 4px; transition: opacity .3s; }
+
+/* ---------- layout ---------- */
+.page { padding-top: 12px; padding-bottom: calc(96px + var(--safe-b)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 820px; margin: 0 auto; }
+.page.with-nav { padding-bottom: calc(150px + var(--safe-b)); }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
+.card-h {
+  display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 14px;
+  font-weight: 600; font-size: 15.5px; border-bottom: 1px solid var(--line);
+}
+.card-h .grow { flex: 1; min-width: 0; }
+.card-h .count { font-size: 12.5px; font-weight: 500; color: var(--ink-3); }
+.card-h.click { cursor: pointer; user-select: none; }
+.card-h .chev { transition: transform .2s; color: var(--ink-3); }
+.card.collapsed .card-h { border-bottom: 0; }
+.card.collapsed .card-h .chev { transform: rotate(-90deg); }
+.card.collapsed .card-b { display: none; }
+.card-b { padding: 4px 14px 14px; }
+.muted { color: var(--ink-3); }
+.small { font-size: 13px; }
+.row { display: flex; gap: 10px; align-items: center; }
+.grow { flex: 1; min-width: 0; }
+.sp { height: 10px; }
+h3.sec { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin: 18px 4px 8px; font-weight: 600; }
+
+/* ---------- forms ---------- */
+.fld { display: block; margin-top: 12px; }
+.fld > span { display: block; font-size: 12.5px; color: var(--ink-2); margin-bottom: 4px; font-weight: 500; }
+.in, select.in, textarea.in {
+  width: 100%; min-height: 46px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
+  padding: 10px 12px; outline: none; transition: border-color .15s, background .15s;
+}
+textarea.in { resize: none; min-height: 80px; line-height: 1.45; }
+textarea.in.tv { min-height: 46px; line-height: 1.35; padding-top: 11px; padding-bottom: 9px; }
+.in:focus { border-color: var(--pri-2); background: #FBFEFE; }
+.in.bad { border-color: var(--red); background: var(--red-soft); color: var(--red); font-weight: 600; }
+.in.ok { border-color: #9CCCA0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.grid2 > .full { grid-column: 1 / -1; }
+.chk { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14.5px; }
+.chk input { width: 22px; height: 22px; accent-color: var(--pri); flex: none; }
+
+.btn {
+  border: 0; border-radius: 12px; min-height: 46px; padding: 0 16px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--pri-soft); color: var(--pri);
+}
+.btn.pri { background: var(--pri); color: #fff; }
+.btn.acc { background: var(--acc); color: #2B1B00; }
+.btn.red { background: var(--red-soft); color: var(--red); }
+.btn.ghost { background: transparent; color: var(--pri); }
+.btn.block { width: 100%; }
+.btn:active { filter: brightness(.94); }
+.btn[disabled] { opacity: .5; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.btns > .btn { flex: 1 1 auto; }
+
+/* ---------- checklist item ---------- */
+.item { padding: 12px 0; border-top: 1px solid var(--line); }
+.item:first-child { border-top: 0; }
+.item.alert { background: linear-gradient(90deg, rgba(198,40,40,.06), transparent 70%); margin: 0 -14px; padding: 12px 14px; }
+.item-top { display: flex; gap: 8px; align-items: flex-start; }
+.num {
+  min-width: 26px; height: 22px; padding: 0 5px; border-radius: 6px; background: var(--pri-soft); color: var(--pri);
+  font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; flex: none;
+}
+.item-lbl { flex: 1; min-width: 0; font-weight: 500; }
+.item-ref { font-size: 12.5px; color: var(--ink-3); margin-top: 1px; }
+.prev { font-size: 12px; color: var(--pri-2); margin-top: 3px; }
+.prev b { font-weight: 600; }
+.item .ib { width: 38px; height: 38px; color: var(--ink-3); margin: -6px -6px 0 0; }
+.item .ib.on { color: var(--pri); }
+.vals { display: grid; grid-template-columns: 1fr 40px 1fr; gap: 6px; align-items: end; margin-top: 8px; }
+.vals.single { grid-template-columns: 1fr; }
+.vals label > span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin-bottom: 3px; font-weight: 600; }
+.cp {
+  height: 46px; width: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center;
+}
+.cp:active { background: var(--pri-soft); color: var(--pri); }
+.warn { font-size: 12px; color: var(--red); margin-top: 5px; font-weight: 500; display: flex; gap: 4px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1.5px solid var(--line); background: #fff; border-radius: 18px; min-height: 36px; padding: 0 13px;
+  font-size: 14px; display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2);
+}
+.chip.on { background: var(--pri); border-color: var(--pri); color: #fff; font-weight: 600; }
+.chip.on.bad { background: var(--red); border-color: var(--red); }
+.chip.sug { min-height: 30px; font-size: 12.5px; padding: 0 10px; border-style: dashed; }
+.chiprow { display: grid; grid-template-columns: 74px 1fr; gap: 8px; align-items: center; margin-top: 8px; }
+.chiprow > span { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); font-weight: 600; }
+.chiprow .cpx { grid-column: 2; justify-self: start; }
+.note-in { margin-top: 8px; min-height: 60px; font-size: 14px; }
+
+/* ---------- lists ---------- */
+.li {
+  display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-top: 1px solid var(--line); background: #fff; cursor: pointer;
+}
+.li:first-child { border-top: 0; }
+.li:active { background: #F6F9F9; }
+.li .ttl2 { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li .sub { font-size: 13px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar {
+  width: 42px; height: 42px; border-radius: 12px; background: var(--pri-soft); color: var(--pri);
+  display: flex; align-items: center; justify-content: center; flex: none; font-weight: 700; font-size: 13px; text-align: center; line-height: 1.05;
+}
+.avatar small { display: block; font-size: 10px; font-weight: 600; opacity: .8; }
+.badges { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
+.bdg { font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 8px; background: #EEF2F3; color: var(--ink-2); display: inline-flex; align-items: center; gap: 3px; }
+.bdg.red { background: var(--red-soft); color: var(--red); }
+.bdg.green { background: var(--green-soft); color: var(--green); }
+.bdg svg.i { width: 13px; height: 13px; }
+.search { position: relative; margin-bottom: 12px; }
+.search .in { padding-left: 42px; border-radius: 24px; background: #fff; border-color: transparent; box-shadow: var(--shadow); }
+.search svg { position: absolute; left: 14px; top: 12px; color: var(--ink-3); }
+.empty { text-align: center; padding: 48px 24px; color: var(--ink-3); }
+.empty svg.i { width: 56px; height: 56px; stroke-width: 1.4; color: #B5C4C9; }
+.empty b { display: block; color: var(--ink-2); font-size: 17px; margin: 12px 0 6px; }
+
+/* ---------- FAB / bottom nav ---------- */
+.fab {
+  position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(76px + var(--safe-b)); z-index: 30;
+  height: 56px; border-radius: 18px; border: 0; background: var(--acc); color: #2B1B00; font-weight: 700; font-size: 15.5px;
+  padding: 0 20px 0 16px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.22);
+}
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: #fff; border-top: 1px solid var(--line);
+  display: flex; padding-bottom: var(--safe-b);
+}
+.nav button {
+  flex: 1; border: 0; background: none; height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 12px; color: var(--ink-3); font-weight: 500;
+}
+.nav button .pillbg { width: 56px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; }
+.nav button.on { color: var(--pri); font-weight: 700; }
+.nav button.on .pillbg { background: var(--pri-soft); }
+.bottombar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: rgba(255,255,255,.96); border-top: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: calc(10px + var(--safe-b)); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 8px; backdrop-filter: blur(6px);
+}
+.bottombar .btn { flex: 1; }
+
+/* ---------- section tabs ---------- */
+.tabs {
+  position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 15; background: var(--bg); display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px 8px;
+  scrollbar-width: none; margin: -12px -16px 6px;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button {
+  flex: none; border: 0; background: #fff; border-radius: 16px; height: 32px; padding: 0 12px; font-size: 13px; color: var(--ink-2);
+  box-shadow: var(--shadow); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+}
+.tabs button .dot { width: 7px; height: 7px; border-radius: 50%; background: #C9D3D6; }
+.tabs button .dot.full { background: var(--green); }
+.tabs button .dot.alert { background: var(--red); }
+.progress { height: 4px; background: #D9E2E5; border-radius: 2px; overflow: hidden; margin: 2px 2px 12px; }
+.progress > i { display: block; height: 100%; background: var(--green); border-radius: 2px; transition: width .3s; }
+.summary { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+
+/* ---------- photos ---------- */
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+.ph { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #E6ECEE; cursor: pointer; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph .cap { position: absolute; left: 0; right: 0; bottom: 0; font-size: 11px; color: #fff; padding: 14px 6px 4px; background: linear-gradient(transparent, rgba(0,0,0,.65)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph .n { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
+.photo-big { width: 100%; max-height: 52vh; object-fit: contain; background: #111; border-radius: 12px; display: block; }
+
+/* ---------- sheet / modal ---------- */
+#overlay { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+.scrim { position: absolute; inset: 0; background: rgba(10, 25, 30, .45); opacity: 0; transition: opacity .2s; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; max-height: 92vh; overflow-y: auto; background: #fff;
+  border-radius: 20px 20px 0 0; padding: 8px 16px calc(18px + var(--safe-b)); transform: translateY(100%); transition: transform .22s ease-out;
+  pointer-events: auto; max-width: 820px; margin: 0 auto;
+}
+.sheet .grab { width: 40px; height: 4px; border-radius: 2px; background: #CBD5D8; margin: 4px auto 10px; }
+.sheet h2 { margin: 4px 0 4px; font-size: 19px; }
+.sheet .sub { color: var(--ink-3); font-size: 13.5px; margin-bottom: 4px; }
+.layer.open .scrim { opacity: 1; }
+.layer.open .sheet { transform: none; }
+.menu-it { display: flex; align-items: center; gap: 14px; width: 100%; border: 0; background: none; padding: 14px 6px; font-size: 15.5px; text-align: left; border-radius: 10px; }
+.menu-it:active { background: #F1F5F6; }
+.menu-it.red { color: var(--red); }
+.menu-it svg.i { color: var(--ink-3); }
+.menu-it.red svg.i { color: var(--red); }
+.files { margin-top: 10px; }
+.file-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.file-row .grow { font-size: 14px; word-break: break-word; }
+.file-row .ib { color: var(--pri); }
+
+#toast {
+  position: fixed; left: 50%; bottom: calc(150px + var(--safe-b)); transform: translate(-50%, 20px); z-index: 200;
+  background: #1F2D33; color: #fff; padding: 11px 18px; border-radius: 12px; font-size: 14px; opacity: 0; transition: all .25s; pointer-events: none;
+  max-width: 88vw; text-align: center;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+.busy { position: fixed; inset: 0; z-index: 300; background: rgba(255,255,255,.75); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; font-weight: 600; color: var(--pri); }
+.spin { width: 42px; height: 42px; border: 4px solid var(--pri-soft); border-top-color: var(--pri); border-radius: 50%; animation: sp 0.8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* ---------- editor ---------- */
+.ed-row { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-top: 1px solid var(--line); }
+.ed-row:first-child { border-top: 0; }
+.ed-row .grow { cursor: pointer; padding: 4px 0; }
+.ed-row .t { font-size: 14.5px; font-weight: 500; }
+.ed-row .s { font-size: 12px; color: var(--ink-3); }
+.ed-row .ib { width: 36px; height: 36px; color: var(--ink-3); }
+.ed-row .ib[disabled] { opacity: .25; }
+.tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; background: #EEF2F3; color: var(--ink-2); }
+.info-box { background: var(--pri-soft); color: var(--pri); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; margin-bottom: 12px; display: flex; gap: 10px; }
+.info-box svg { flex: none; margin-top: 1px; }
+.swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.sw { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px var(--line); }
+.sw.on { box-shadow: 0 0 0 3px var(--ink); }
+.logo-prev { max-width: 180px; max-height: 70px; display: block; margin-top: 8px; border: 1px dashed var(--line); border-radius: 8px; padding: 6px; background: #fff; }
+
+/* ---------- history chart ---------- */
+.chart { width: 100%; height: auto; display: block; margin-top: 8px; }
+.htable { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+.htable th { text-align: left; color: var(--ink-3); font-weight: 600; font-size: 11.5px; text-transform: uppercase; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.htable td { padding: 7px 4px; border-bottom: 1px solid var(--line); }
+.htable td.bad { color: var(--red); font-weight: 700; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+
+@media (min-width: 640px) {
+  .photos { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---------- web: impianti, foto per voce, istruzioni ---------- */
+.plant-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.iph { margin-top: 8px; }
+.iph-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip.phb { min-height: 34px; font-size: 13px; border-color: #C7D6DA; color: var(--pri); background: #F5FAFB; }
+.chip.phb .phn { background: var(--pri); color: #fff; border-radius: 9px; font-size: 11px; font-weight: 700; padding: 0 6px; line-height: 17px; }
+.iph-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.ph.sm { border-radius: 8px; }
+.ph.off img { opacity: .45; filter: grayscale(.6); }
+.ph .ex { position: absolute; left: 4px; right: 4px; bottom: 4px; font-size: 10px; font-weight: 700; color: #fff; background: rgba(198,40,40,.85); border-radius: 5px; text-align: center; padding: 1px 2px; }
+.ph.off .cap { background: linear-gradient(transparent, rgba(198,40,40,.85)); }
+ol.steps { margin: 14px 0 0; padding-left: 22px; display: grid; gap: 8px; font-size: 14.5px; }
+ol.steps b { color: var(--pri); }
+a.btn { text-decoration: none; }
+.sheet { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="overlay"></div>
+<div id="toast"></div>
+<script>
+// Larghezze Helvetica (metriche compatibili Liberation Sans), byte cp1252 32..255
+const FONT_W={"R":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,552,400,549,333,333,333,576,537,333,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,549,611,556,556,556,556,500,556,500],"B":[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,0,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,552,400,549,333,333,333,576,556,333,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,549,611,611,611,611,611,556,611,556],"I":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,0,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,552,400,549,333,333,333,576,537,333,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,549,611,556,556,556,556,500,556,500]};
+
+'use strict';
+/* Utilità generali: DOM, icone, date, finestre a comparsa */
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  if (props) {
+    for (const k in props) {
+      const v = props[k];
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+      else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+      else if (k === 'html') el.innerHTML = v;
+      else if (k === 'value') el.value = v;
+      else if (k === 'checked') el.checked = !!v;
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+  }
+  add(el, kids);
+  return el;
+}
+function add(el, kids) {
+  for (const k of kids) {
+    if (k == null || k === false) continue;
+    if (Array.isArray(k)) add(el, k);
+    else if (k instanceof Node) el.appendChild(k);
+    else el.appendChild(document.createTextNode(String(k)));
+  }
+}
+
+const ICONS = {
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  more: '<circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-9 9"/>',
+  note: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  copy: '<path d="M5 12h12M13 7l5 5-5 5"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  up: '<path d="M6 15l6-6 6 6"/>',
+  down: '<path d="M6 9l6 6 6-6"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  pdf: '<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17.5h4"/>',
+  share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="3"/>',
+  factory: '<path d="M3 21V10l6 4V10l6 4V5h4l2 16z"/><path d="M7 18h2M12 18h2"/>',
+  layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.6 15H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 9.7 4V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.3z"/>',
+  alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v4.5M12 18h.01"/>',
+  chev: '<path d="M6 9l6 6 6-6"/>',
+  download: '<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',
+  upload: '<path d="M12 20V9M7 13.5l5-5 5 5M5 4h14"/>',
+  open: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  dup: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  chart: '<path d="M4 20V4M4 20h16"/><path d="M7 15l4-5 3 3 5-7"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+  jpg: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 16l3.5-4 2.5 3 2-2 3 3"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>',
+  left: '<path d="M15 18l-6-6 6-6"/>',
+  right: '<path d="M9 18l6-6-6-6"/>',
+};
+function icon(name, cls) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('class', 'i' + (cls ? ' ' + cls : ''));
+  s.innerHTML = ICONS[name] || '';
+  return s;
+}
+
+/* ---------- date ---------- */
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function nowHM() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(Math.floor(d.getMinutes() / 5) * 5).padStart(2, '0');
+}
+function fmtDate(iso, sep) {
+  if (!iso) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return iso;
+  return m[3] + (sep || '/') + m[2] + (sep || '/') + m[1];
+}
+const MONTHS = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+function monthLabel(iso) {
+  const m = /^(\d{4})-(\d{2})/.exec(iso || '');
+  return m ? MONTHS[+m[2] - 1] + ' ' + m[1] : 'Senza data';
+}
+function parseNum(v) {
+  if (v == null) return NaN;
+  const s = String(v).trim().replace(/\s/g, '').replace(',', '.');
+  if (!/^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(s)) return NaN;
+  return parseFloat(s);
+}
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return '';
+  return String(+n.toFixed(4)).replace('.', ',');
+}
+function norm(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+function debounce(fn, ms) {
+  let t;
+  const f = (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  f.flush = () => { clearTimeout(t); fn(); };
+  return f;
+}
+function autosize(ta, min) {
+  const fit = () => { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight + 3, min || 60) + 'px'; };
+  ta.addEventListener('input', fit);
+  requestAnimationFrame(fit);
+  return ta;
+}
+function safeFile(s) {
+  return String(s || '').replace(/[\\/:*?"<>|\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 140) || 'report';
+}
+
+/* ---------- toast / busy ---------- */
+let toastT;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function busy(msg) {
+  const el = h('div', { class: 'busy' }, h('div', { class: 'spin' }), h('div', null, msg || 'Attendere…'));
+  document.body.appendChild(el);
+  return { set: m => { el.lastChild.textContent = m; }, done: () => el.remove() };
+}
+function nextFrame() { return new Promise(r => setTimeout(r, 30)); }
+
+/* ---------- bottom sheets ---------- */
+const layers = [];
+function sheet(build, opts) {
+  opts = opts || {};
+  const ov = document.getElementById('overlay');
+  const layer = h('div', { class: 'layer' });
+  const scrim = h('div', { class: 'scrim' });
+  const box = h('div', { class: 'sheet' }, h('div', { class: 'grab' }));
+  layer.append(scrim, box);
+  ov.appendChild(layer);
+  let closed = false;
+  const api = {
+    el: box,
+    close(val) {
+      if (closed) return;
+      closed = true;
+      layer.classList.remove('open');
+      const i = layers.indexOf(api);
+      if (i >= 0) layers.splice(i, 1);
+      setTimeout(() => layer.remove(), 230);
+      if (opts.onClose) opts.onClose(val);
+    },
+  };
+  scrim.addEventListener('click', () => api.close());
+  add(box, [build(api)]);
+  layers.push(api);
+  requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('open')));
+  return api;
+}
+function closeTopLayer() {
+  if (!layers.length) return false;
+  layers[layers.length - 1].close();
+  return true;
+}
+function ask(title, msg, buttons) {
+  // buttons: [{label, value, cls}]
+  return new Promise(res => {
+    sheet(s => [
+      h('h2', null, title),
+      msg ? h('div', { class: 'sub', style: { fontSize: '15px', color: 'var(--ink-2)', marginTop: '6px' } }, msg) : null,
+      h('div', { class: 'btns', style: { marginTop: '18px' } },
+        (buttons || [{ label: 'Annulla', value: false }, { label: 'OK', value: true, cls: 'pri' }]).map(b =>
+          h('button', { class: 'btn ' + (b.cls || ''), onclick: () => { s.close(b.value); } }, b.label))),
+    ], { onClose: v => res(v === undefined ? false : v) });
+  });
+}
+function menu(title, items) {
+  return sheet(s => [
+    title ? h('h2', { style: { marginBottom: '6px' } }, title) : null,
+    items.filter(Boolean).map(it => h('button', {
+      class: 'menu-it' + (it.red ? ' red' : ''),
+      onclick: () => { s.close(); setTimeout(it.do, 120); },
+    }, icon(it.icon), h('span', { class: 'grow' }, it.label))),
+  ]);
+}
+function prompt2(title, label, value, opts) {
+  opts = opts || {};
+  return new Promise(res => {
+    let inp;
+    sheet(s => {
+      inp = h(opts.multiline ? 'textarea' : 'input', { class: 'in', value: value || '', placeholder: opts.placeholder || '' });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !opts.multiline) { s.close(inp.value); } });
+      setTimeout(() => inp.focus(), 250);
+      return [
+        h('h2', null, title),
+        h('label', { class: 'fld' }, h('span', null, label), inp),
+        h('div', { class: 'btns' },
+          h('button', { class: 'btn', onclick: () => s.close(null) }, 'Annulla'),
+          h('button', { class: 'btn pri', onclick: () => s.close(inp.value) }, opts.ok || 'Salva')),
+      ];
+    }, { onClose: v => res(v === undefined ? null : v) });
+  });
+}
+
+'use strict';
+/* Archivio locale (IndexedDB): modelli, report, foto, impostazioni */
+const DB = (() => {
+  let dbp;
+  function open() {
+    if (!dbp) {
+      dbp = new Promise((res, rej) => {
+        const r = indexedDB.open('reportimpianti', 1);
+        r.onupgradeneeded = () => {
+          const d = r.result;
+          for (const s of ['templates', 'reports', 'photos']) {
+            if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' });
+          }
+          if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'k' });
+        };
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+    }
+    return dbp;
+  }
+  async function tx(store, mode, fn) {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(store, mode);
+      const s = t.objectStore(store);
+      let out;
+      const r = fn(s);
+      if (r && 'onsuccess' in r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out);
+      t.onerror = () => rej(t.error);
+      t.onabort = () => rej(t.error || new Error('Transazione annullata'));
+    });
+  }
+  const api = {
+    all: s => tx(s, 'readonly', st => st.getAll()),
+    get: (s, id) => tx(s, 'readonly', st => st.get(id)),
+    put: (s, obj) => tx(s, 'readwrite', st => st.put(obj)),
+    del: (s, id) => tx(s, 'readwrite', st => st.delete(id)),
+    async getSetting(k, def) {
+      const r = await api.get('settings', k);
+      return r ? r.v : def;
+    },
+    setSetting: (k, v) => tx('settings', 'readwrite', st => st.put({ k, v })),
+    async allSettings() {
+      const rows = await api.all('settings');
+      const o = {};
+      for (const r of rows) o[r.k] = r.v;
+      return o;
+    },
+  };
+  return api;
+})();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+'use strict';
+/* Ponte verso Android (AndroidBridge) con alternative per il browser */
+const Native = (() => {
+  const B = window.AndroidBridge;
+  const isApp = !!B;
+  const pending = {};
+  window.__nativeCb = (id, payload) => {
+    const p = pending[id];
+    if (!p) return;
+    delete pending[id];
+    let v;
+    try { v = JSON.parse(payload); } catch (e) { v = payload; }
+    if (v && v.error) p.rej(new Error(v.error)); else p.res(v);
+  };
+  function call(fn, ...args) {
+    return new Promise((res, rej) => {
+      const id = 'cb' + uid();
+      pending[id] = { res, rej };
+      try { B[fn](id, ...args); } catch (e) { delete pending[id]; rej(e); }
+    });
+  }
+  function b64(bytes) {
+    let s = '';
+    const CH = 0x8000;
+    for (let i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+    return btoa(s);
+  }
+  async function toBytes(data) {
+    if (data instanceof Uint8Array) return data;
+    if (data instanceof Blob) return new Uint8Array(await data.arrayBuffer());
+    if (typeof data === 'string') return new TextEncoder().encode(data);
+    return new Uint8Array(data);
+  }
+  async function tmpFrom(data) {
+    const id = B.fileBegin();
+    if (!id) throw new Error('Impossibile creare il file temporaneo');
+    try {
+      const bytes = await toBytes(data);
+      const CH = 3 * 256 * 1024;
+      for (let i = 0; i < bytes.length; i += CH) {
+        if (!B.fileAppend(id, b64(bytes.subarray(i, i + CH)))) throw new Error('Errore di scrittura');
+      }
+    } finally {
+      B.fileEnd(id);
+    }
+    return id;
+  }
+
+  /* ---- browser ---- */
+  let dlP = null;
+  function downloads() {
+    if (!dlP) {
+      dlP = (async () => {
+        try { if (window.claude && typeof window.claude.use === 'function') return await window.claude.use('downloads'); } catch (e) { /* assente */ }
+        return null;
+      })();
+    }
+    return dlP;
+  }
+  if (!isApp) downloads();
+  function pickFilesBrowser(accept, multiple, capture) {
+    return new Promise(res => {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = accept;
+      if (multiple) inp.multiple = true;
+      if (capture) inp.setAttribute('capture', 'environment');
+      inp.style.display = 'none';
+      document.body.appendChild(inp);
+      inp.onchange = () => { res(Array.from(inp.files || [])); inp.remove(); };
+      inp.click();
+    });
+  }
+  async function shrinkBlob(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Immagine non leggibile')); i.src = url; });
+      const max = 1600;
+      const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * sc);
+      c.height = Math.round(img.naturalHeight * sc);
+      const g = c.getContext('2d');
+      g.fillStyle = '#fff';
+      g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(img, 0, 0, c.width, c.height);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+      return { blob, w: c.width, h: c.height };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  return {
+    isApp,
+    version: () => (isApp ? B.version() : 'web 2.0'),
+
+    /** source: 'camera' | 'gallery'. Ritorna [{blob,w,h}] */
+    async pickImages(source, multiple) {
+      if (isApp) {
+        const list = await call('pickImage', source, !!multiple);
+        const out = [];
+        for (const it of list || []) {
+          const r = await fetch(it.url);
+          out.push({ blob: await r.blob(), w: it.w, h: it.h });
+          B.deleteTemp(it.url);
+        }
+        return out;
+      }
+      const files = await pickFilesBrowser('image/*', multiple, source === 'camera');
+      const out = [];
+      for (const f of files) out.push(await shrinkBlob(f));
+      return out;
+    },
+
+    async pickFile() {
+      if (isApp) {
+        const r = await call('pickFile');
+        if (!r) return null;
+        const resp = await fetch(r.url);
+        const blob = await resp.blob();
+        B.deleteTemp(r.url);
+        return blob;
+      }
+      const files = await pickFilesBrowser('.json,application/json', false);
+      return files[0] || null;
+    },
+
+    /** App: salva in Download/Report Impianti → {uri,name}. Browser: download con conferma. */
+    async saveFile(data, name, mime) {
+      if (isApp) {
+        const id = await tmpFrom(data);
+        const r = await call('saveFile', id, name, mime);
+        B.deleteTemp(id);
+        return Object.assign({ saved: true }, r);
+      }
+      const blob = data instanceof Blob ? data : new Blob([data], { type: mime || 'application/octet-stream' });
+      const d = await downloads();
+      if (d) {
+        try {
+          await d.save({ filename: name, data: blob });
+          return { name, saved: true };
+        } catch (e) {
+          if (e && e.code === 'declined') throw new Error('Salvataggio annullato');
+          if (e && e.code === 'rate_limited') throw new Error('Conferma il salvataggio precedente, poi riprova');
+          throw new Error((e && (e.message || e.code)) || 'Salvataggio non riuscito');
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return { name, saved: true };
+    },
+
+    share(uris, mime, subject, email) {
+      if (!isApp) { toast('Condivisione disponibile nell\'app Android'); return; }
+      if (B.shareTo) B.shareTo(JSON.stringify(uris), mime, subject || '', email || '');
+      else B.share(JSON.stringify(uris), mime, subject || '');
+    },
+    open(uri, mime) {
+      if (isApp) B.open(uri, mime);
+    },
+  };
+})();
+
+/* ---------- ZIP (senza compressione: JPEG e PDF sono già compressi) ---------- */
+const Zip = (() => {
+  const T = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    T[n] = c >>> 0;
+  }
+  function crc32(u8) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < u8.length; i++) c = T[(c ^ u8[i]) & 255] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  async function bytes(d) {
+    if (d instanceof Uint8Array) return d;
+    if (d instanceof Blob) return new Uint8Array(await d.arrayBuffer());
+    if (typeof d === 'string') return new TextEncoder().encode(d);
+    return new Uint8Array(d);
+  }
+  /** files: [{path, data}] → Blob */
+  async function build(files) {
+    const enc = new TextEncoder();
+    const d = new Date();
+    const dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | Math.floor(d.getSeconds() / 2);
+    const dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    const parts = [];
+    const central = [];
+    let off = 0;
+    for (const f of files) {
+      const name = enc.encode(f.path);
+      const data = await bytes(f.data);
+      const crc = crc32(data);
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+      lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), name, data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+      ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true);
+      ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+      ch.setUint32(38, 0, true); ch.setUint32(42, off, true);
+      central.push(new Uint8Array(ch.buffer), name);
+      off += 30 + name.length + data.length;
+    }
+    const cdSize = central.reduce((a, c) => a + c.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, off, true); end.setUint16(20, 0, true);
+    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
+  }
+  return { build, crc32 };
+})();
+
+'use strict';
+/* Modello predefinito ricavato dalla checklist "Controllo Torre di Desolforazione" */
+
+const YN = ['Sì', 'No', 'N/A'];
+const TYPE_LABEL = { number: 'Numero', text: 'Testo', yesno: 'Sì / No / N.A.', choice: 'Scelta' };
+const HTYPE_LABEL = { text: 'Testo', number: 'Numero', date: 'Data', time: 'Ora', choice: 'Testo con suggerimenti' };
+
+function mkItem(num, label, ref, type, extra) {
+  return Object.assign({
+    id: 'i' + uid(), num: String(num || ''), label, ref: ref || '', type,
+    unit: '', min: null, max: null, options: type === 'yesno' ? YN.slice() : [], alert: [], single: false,
+  }, extra || {});
+}
+
+function defaultTemplate() {
+  const sec = (title, items) => ({ id: 's' + uid(), title, items });
+  const LIQ = ['Pulito', 'Leggermente torbido', 'Torbido', 'Sporco'];
+  return {
+    id: 'tpl_torre_desolforazione',
+    name: 'Checklist Controllo Torre Desolforazione',
+    title: 'Checklist controllo Torre di Desolforazione',
+    subtitle: "Da compilare ad ogni intervento e allegare al rapportino — registra orario e valore sia all'arrivo che alla partenza, così da documentare come è stato trovato e come è stato lasciato l'impianto.",
+    colA: "Riscontro ALL'ARRIVO",
+    colB: 'Riscontro ALLA PARTENZA',
+    headerFields: [
+      { id: 'h_impianto', label: 'Cliente / Impianto', type: 'text', role: 'plant', options: [], def: '' },
+      { id: 'h_data', label: 'Data intervento', type: 'date', role: 'date', options: [], def: 'today' },
+      { id: 'h_tecnico', label: 'Tecnico', type: 'text', role: 'tech', options: [], def: '' },
+      { id: 'h_arrivo', label: 'Ora arrivo impianto', type: 'time', role: '', options: [], def: 'now' },
+      { id: 'h_partenza', label: 'Ora partenza impianto', type: 'time', role: '', options: [], def: '' },
+      { id: 'h_ore', label: 'Ore funzionamento impianto', type: 'number', role: '', options: [], def: '' },
+      {
+        id: 'h_tipologia', label: 'Tipologia torre (Airdep / Ecochimica, con o senza sedimentatore)', type: 'choice', role: 'keep',
+        options: ['Airdep con sedimentatore', 'Airdep senza sedimentatore', 'Ecochimica con sedimentatore', 'Ecochimica senza sedimentatore'], def: '',
+      },
+    ],
+    sections: [
+      sec('Pressioni e strumentazione', [
+        mkItem(1, 'Pressione rampa lavaggio 1 (SP1)', '2,1 - 3 bar', 'number', { unit: 'bar', min: 2.1, max: 3 }),
+        mkItem(2, 'Pressione rampa lavaggio 2 (SP2)', '2,1 - 3 bar', 'number', { unit: 'bar', min: 2.1, max: 3 }),
+        mkItem(3, 'Pressione collettore soffiante (SP3)', '180-280 mbar ok · 300-350 mbar segnalare', 'number', { unit: 'mbar', min: 180, max: 280 }),
+        mkItem(4, 'Pressione uscita torre / biogas (MP1)', '-25 / +45 mbar — allarme bloccante', 'number', { unit: 'mbar', min: -25, max: 45 }),
+        mkItem(5, 'Pressione filtro sedimentazione IN (SP101)', '0,7 - 0,9 bar', 'number', { unit: 'bar', min: 0.7, max: 0.9 }),
+        mkItem(8, 'Perdite o rumori sulle pompe rampa lavaggio', 'Controllo visivo/acustico', 'yesno', { alert: ['Sì'] }),
+      ]),
+      sec('Vasca di ossidazione e soluzione', [
+        mkItem(10, 'Colore della vasca', 'Atteso: rosso mattone', 'text', { options: ['Rosso mattone', 'Rosso tendente a rosso mattone', 'Arancione', 'Marrone', 'Scuro / nero'] }),
+        mkItem(11, 'Ossigenazione dei diffusori', 'Omogenea / Disomogenea', 'choice', { options: ['Omogenea', 'Disomogenea'], alert: ['Disomogenea'] }),
+        mkItem(12, 'Livello vasca (sensore SL1) e offset da PLC', 'Confronto lettura HMI / visiva', 'number', { unit: 'mm' }),
+        mkItem(13, 'pH della soluzione in vasca', '7,80 - 8,3', 'number', { min: 7.8, max: 8.3 }),
+        mkItem(14, 'Taratura sonda pH eseguita', '', 'yesno'),
+        mkItem(15, 'Gel/membrana sonda pH integri (non neri)', '', 'yesno', { alert: ['No'] }),
+        mkItem(16, 'Ossigeno disciolto nella soluzione', '> 3,5 / 4', 'number', { min: 3.5 }),
+        mkItem(17, 'Presenza schiuma in vasca', '', 'yesno', { alert: ['Sì'] }),
+        mkItem(18, 'Presenza schiuma in testa al sedimentatore', '', 'yesno', { alert: ['Sì'] }),
+        mkItem(19, 'Sedimento vasca — lato SPORCO (cono Imhoff)', '', 'choice', { options: ['Assente', 'Presente', 'Abbondante'] }),
+        mkItem(20, 'Sedimento vasca — lato PULITO (cono Imhoff)', '', 'choice', { options: ['Assente', 'Presente', 'Abbondante'] }),
+        mkItem(22, 'Liquido dallo scarico vasca di ossidazione', 'Aspetto/colore', 'text', { options: LIQ.slice() }),
+      ]),
+      sec('Reagenti chimici', [
+        mkItem(23, 'Livello/presenza NaOH (soda caustica)', '', 'number', { unit: 'L' }),
+        mkItem(24, 'Livello/presenza AD21 / o alternativa', '', 'number', { unit: 'L' }),
+        mkItem(25, 'Produttore / provenienza reagenti', '', 'yesno'),
+        mkItem(26, 'Pompa dosatrice NaOH funzionante', '', 'yesno', { alert: ['No'] }),
+        mkItem(27, 'Pompa dosatrice AD21 funzionante', '', 'yesno', { alert: ['No'] }),
+        mkItem(28, 'Dosaggio NaOH giornaliero (24h)', '', 'text', { options: ['A inseguimento pH', 'Temporizzato'] }),
+        mkItem(29, 'Dosaggio AD21 giornaliero (24h)', '', 'text', { options: ['Pompa dosatrice', 'Dosaggio manuale 20 L/gg'] }),
+        mkItem(31, 'Temporizzazione dosaggio soda presente e in uso', 'sì/no', 'yesno'),
+      ]),
+      sec('Torre di lavaggio (scrubber)', [
+        mkItem(32, 'Liquido dallo scarico VP1 sedimentatore', 'Aspetto/colore', 'text', { options: LIQ.slice() }),
+        mkItem(33, 'Liquido dallo scarico torre', 'Aspetto/colore', 'text', { options: LIQ.slice() }),
+      ]),
+      sec('Analisi biogas', [
+        mkItem(43, 'PPM H₂S in ingresso alla torre (a monte)', '', 'number', { unit: 'ppm' }),
+        mkItem('', 'Presenza filtro per abbattimento H₂S / altri filtri', 'se sì, specificare tipologia e funzione', 'yesno'),
+        mkItem(44, 'PPM H₂S in uscita dalla torre (a valle)', '< 100 ppm', 'number', { unit: 'ppm', max: 100 }),
+        mkItem(45, 'Portata biogas', 'Nm³/h', 'number', { unit: 'Nm³/h' }),
+        mkItem(46, 'Allarmi attivi su HMI', 'Elencare in nota se presenti', 'yesno', { alert: ['Sì'] }),
+      ]),
+    ],
+    notesTitle: 'Note aggiuntive, osservazioni e anomalie riscontrate',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+function blankTemplate() {
+  return {
+    id: 'tpl_' + uid(),
+    name: 'Nuovo modello',
+    title: 'Checklist di controllo',
+    subtitle: '',
+    colA: "Riscontro ALL'ARRIVO",
+    colB: 'Riscontro ALLA PARTENZA',
+    headerFields: [
+      { id: 'h_impianto', label: 'Cliente / Impianto', type: 'text', role: 'plant', options: [], def: '' },
+      { id: 'h_data', label: 'Data intervento', type: 'date', role: 'date', options: [], def: 'today' },
+      { id: 'h_tecnico', label: 'Tecnico', type: 'text', role: 'tech', options: [], def: '' },
+      { id: 'h_arrivo', label: 'Ora arrivo impianto', type: 'time', role: '', options: [], def: 'now' },
+      { id: 'h_partenza', label: 'Ora partenza impianto', type: 'time', role: '', options: [], def: '' },
+    ],
+    sections: [{ id: 's' + uid(), title: 'Controlli', items: [] }],
+    notesTitle: 'Note aggiuntive, osservazioni e anomalie riscontrate',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+const ACCENTS = ['#0B4F5C', '#1F4E79', '#2E7D32', '#5D4037', '#6A1B9A', '#B23B1E', '#37474F'];
+
+const DEFAULT_SETTINGS = {
+  tecnico: '',
+  azienda: '',
+  accent: '#0B4F5C',
+  filePattern: '{impianto} - {data} - {modello}',
+  jpegDpi: 150,
+  photosPerRow: 2,
+  spInbox: '_CARICA QUI',
+  spSubject: 'REPORT TORRI',
+  spLink: '',
+};
+
+'use strict';
+/* Generatore PDF minimale: testo Helvetica (WinAnsi), rettangoli, linee, immagini JPEG. */
+
+const PDF_CP1252 = {
+  0x20AC: 0x80, 0x201A: 0x82, 0x0192: 0x83, 0x201E: 0x84, 0x2026: 0x85, 0x2020: 0x86, 0x2021: 0x87, 0x02C6: 0x88,
+  0x2030: 0x89, 0x0160: 0x8A, 0x2039: 0x8B, 0x0152: 0x8C, 0x017D: 0x8E, 0x2018: 0x91, 0x2019: 0x92, 0x201C: 0x93,
+  0x201D: 0x94, 0x2022: 0x95, 0x2013: 0x96, 0x2014: 0x97, 0x02DC: 0x98, 0x2122: 0x99, 0x0161: 0x9A, 0x203A: 0x9B,
+  0x0153: 0x9C, 0x017E: 0x9E, 0x0178: 0x9F,
+};
+const PDF_SUBST = {
+  '≤': '<=', '≥': '>=', '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '→': '->', '←': '<-', '⇒': '=>',
+  '☑': '', '☐': '', '✓': 'v', '✔': 'v', '➖': '-', '−': '-', ' ': ' ', ' ': ' ', '⚠': '!', '…': '...',
+};
+
+function pdfEncode(str) {
+  // ritorna stringa "binaria" (char code 0..255) in cp1252
+  let out = '';
+  const s = String(str == null ? '' : str);
+  for (const chRaw of s) {
+    let ch = PDF_SUBST[chRaw] !== undefined ? PDF_SUBST[chRaw] : chRaw;
+    for (const c of ch) {
+      const cp = c.codePointAt(0);
+      if (cp === 10 || cp === 13 || cp === 9) { out += ' '; continue; }
+      if (cp < 32) continue;
+      if (cp < 128 || (cp >= 0xA0 && cp <= 0xFF)) { out += String.fromCharCode(cp); continue; }
+      if (PDF_CP1252[cp]) { out += String.fromCharCode(PDF_CP1252[cp]); continue; }
+      const base = c.normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const bcp = base.codePointAt(0);
+      if (base && bcp < 256 && bcp >= 32) out += base[0];
+      else out += '?';
+    }
+  }
+  return out;
+}
+
+class PdfDoc {
+  constructor() {
+    this.W = 595.28;
+    this.H = 841.89;
+    this.pages = [];
+    this.images = [];
+    this.cur = null;
+  }
+  addPage() {
+    this.cur = { ops: [], imgs: new Set(), draw: [] };
+    this.pages.push(this.cur);
+    return this.cur;
+  }
+  static col(hex) {
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || '#000000');
+    if (!m) return '0 0 0';
+    return [m[1], m[2], m[3]].map(x => (parseInt(x, 16) / 255).toFixed(3)).join(' ');
+  }
+  static n(v) { return (Math.round(v * 100) / 100).toString(); }
+
+  textWidth(str, f, size) {
+    const enc = pdfEncode(str);
+    const tbl = FONT_W[f || 'R'];
+    let w = 0;
+    for (let i = 0; i < enc.length; i++) {
+      const c = enc.charCodeAt(i);
+      w += c >= 32 ? (tbl[c - 32] || 556) : 0;
+    }
+    return w * size / 1000;
+  }
+  wrap(str, f, size, maxW) {
+    const lines = [];
+    const paras = String(str == null ? '' : str).replace(/\r/g, '').split('\n');
+    for (const p of paras) {
+      const words = p.split(/ +/);
+      let line = '';
+      for (let w of words) {
+        // spezza parole troppo lunghe
+        while (this.textWidth(w, f, size) > maxW && w.length > 1) {
+          let k = w.length - 1;
+          while (k > 1 && this.textWidth(w.slice(0, k), f, size) > maxW) k--;
+          if (line) { lines.push(line); line = ''; }
+          lines.push(w.slice(0, k));
+          w = w.slice(k);
+        }
+        const test = line ? line + ' ' + w : w;
+        if (this.textWidth(test, f, size) <= maxW) line = test;
+        else { if (line) lines.push(line); line = w; }
+      }
+      lines.push(line);
+    }
+    return lines;
+  }
+  rect(x, y, w, h, o) {
+    o = o || {};
+    const N = PdfDoc.n;
+    let s = 'q ';
+    if (o.fill) s += PdfDoc.col(o.fill) + ' rg ';
+    if (o.stroke) s += PdfDoc.col(o.stroke) + ' RG ' + N(o.lw || 0.5) + ' w ';
+    s += N(x) + ' ' + N(this.H - y - h) + ' ' + N(w) + ' ' + N(h) + ' re ';
+    s += o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S';
+    s += ' Q';
+    this.cur.ops.push(s);
+    this.cur.draw.push({ t: 'rect', x, y, w, h, fill: o.fill, stroke: o.stroke, lw: o.lw || 0.5 });
+  }
+  line(x1, y1, x2, y2, color, lw) {
+    const N = PdfDoc.n;
+    this.cur.draw.push({ t: 'line', x1, y1, x2, y2, color: color || '#000000', lw: lw || 0.5 });
+    this.cur.ops.push('q ' + PdfDoc.col(color || '#000000') + ' RG ' + N(lw || 0.5) + ' w ' +
+      N(x1) + ' ' + N(this.H - y1) + ' m ' + N(x2) + ' ' + N(this.H - y2) + ' l S Q');
+  }
+  /** y = linea di base misurata dall'alto */
+  text(str, x, y, o) {
+    o = o || {};
+    const f = o.f || 'R';
+    const size = o.size || 9;
+    const enc = pdfEncode(str);
+    if (!enc) return;
+    let xx = x;
+    if (o.align === 'right') xx = x - this.textWidth(str, f, size);
+    else if (o.align === 'center') xx = x - this.textWidth(str, f, size) / 2;
+    const esc = enc.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    const fname = { R: 'F1', B: 'F2', I: 'F3' }[f];
+    this.cur.draw.push({ t: 'text', str: String(str), x: xx, y, f, size, color: o.color || '#000000', pw: this.textWidth(str, f, size) });
+    const N = PdfDoc.n;
+    this.cur.ops.push('BT ' + PdfDoc.col(o.color || '#000000') + ' rg /' + fname + ' ' + N(size) + ' Tf 1 0 0 1 ' +
+      N(xx) + ' ' + N(this.H - y) + ' Tm (' + esc + ') Tj ET');
+  }
+  addImage(bytes, w, h) {
+    this.images.push({ bytes, w, h });
+    return this.images.length - 1;
+  }
+  image(idx, x, y, w, h) {
+    const N = PdfDoc.n;
+    this.cur.imgs.add(idx);
+    this.cur.draw.push({ t: 'img', idx, x, y, w, h });
+    this.cur.ops.push('q ' + N(w) + ' 0 0 ' + N(h) + ' ' + N(x) + ' ' + N(this.H - y - h) + ' cm /Im' + idx + ' Do Q');
+  }
+
+  async output(meta) {
+    meta = meta || {};
+    const enc = s => { const b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i) & 255; return b; };
+    const canZip = typeof CompressionStream !== 'undefined';
+    async function deflate(bytes) {
+      const st = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate'));
+      return new Uint8Array(await new Response(st).arrayBuffer());
+    }
+    const objs = []; // ognuno: array di Uint8Array
+    const reserve = () => { objs.push(null); return objs.length; };
+    const set = (n, parts) => { objs[n - 1] = parts; };
+
+    const catalog = reserve();
+    const pagesN = reserve();
+    const fonts = ['Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique'].map(bf => {
+      const n = reserve();
+      set(n, [enc('<< /Type /Font /Subtype /Type1 /BaseFont /' + bf + ' /Encoding /WinAnsiEncoding >>')]);
+      return n;
+    });
+    const imgN = this.images.map(im => {
+      const n = reserve();
+      set(n, [enc('<< /Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h +
+        ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + im.bytes.length + ' >>\nstream\n'),
+      im.bytes, enc('\nendstream')]);
+      return n;
+    });
+    const pageNs = [];
+    for (const p of this.pages) {
+      const pn = reserve();
+      const cn = reserve();
+      pageNs.push(pn);
+      let content = enc(p.ops.join('\n'));
+      let filter = '';
+      if (canZip) {
+        try { content = await deflate(content); filter = ' /Filter /FlateDecode'; } catch (e) { /* senza compressione */ }
+      }
+      set(cn, [enc('<< /Length ' + content.length + filter + ' >>\nstream\n'), content, enc('\nendstream')]);
+      let xo = '';
+      if (p.imgs.size) xo = ' /XObject << ' + Array.from(p.imgs).map(i => '/Im' + i + ' ' + imgN[i] + ' 0 R').join(' ') + ' >>';
+      set(pn, [enc('<< /Type /Page /Parent ' + pagesN + ' 0 R /MediaBox [0 0 ' + this.W + ' ' + this.H + '] /Resources << /Font << /F1 ' +
+        fonts[0] + ' 0 R /F2 ' + fonts[1] + ' 0 R /F3 ' + fonts[2] + ' 0 R >>' + xo + ' >> /Contents ' + cn + ' 0 R >>')]);
+    }
+    set(pagesN, [enc('<< /Type /Pages /Kids [' + pageNs.map(n => n + ' 0 R').join(' ') + '] /Count ' + pageNs.length + ' >>')]);
+    set(catalog, [enc('<< /Type /Catalog /Pages ' + pagesN + ' 0 R >>')]);
+    const pstr = s => '(' + pdfEncode(s).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)') + ')';
+    const info = reserve();
+    const d = new Date();
+    const pd = 'D:' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') +
+      String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0') + String(d.getSeconds()).padStart(2, '0');
+    set(info, [enc('<< /Title ' + pstr(meta.title || 'Report') + ' /Author ' + pstr(meta.author || '') +
+      ' /Producer (Report Impianti) /CreationDate (' + pd + ') >>')]);
+
+    const chunks = [enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n')];
+    let off = chunks[0].length;
+    const xref = [];
+    objs.forEach((parts, i) => {
+      xref.push(off);
+      const head = enc((i + 1) + ' 0 obj\n');
+      chunks.push(head); off += head.length;
+      for (const p of parts) { chunks.push(p); off += p.length; }
+      const tail = enc('\nendobj\n');
+      chunks.push(tail); off += tail.length;
+    });
+    let x = 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n';
+    for (const o of xref) x += String(o).padStart(10, '0') + ' 00000 n \n';
+    x += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root ' + catalog + ' 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + off + '\n%%EOF\n';
+    chunks.push(enc(x));
+    const total = chunks.reduce((a, c) => a + c.length, 0);
+    const out = new Uint8Array(total);
+    let p = 0;
+    for (const c of chunks) { out.set(c, p); p += c.length; }
+    return out;
+  }
+}
+
+/* ---------- Rendering delle pagine in JPEG (canvas) ---------- */
+async function pdfPagesToJpeg(doc, dpi) {
+  const sc = (dpi || 150) / 72;
+  try { await Promise.all(['400 10px Arimo', '700 10px Arimo', 'italic 400 10px Arimo'].map(f => document.fonts.load(f))); } catch (e) { /* font di riserva */ }
+  const bitmaps = [];
+  for (const im of doc.images) {
+    try { bitmaps.push(await createImageBitmap(new Blob([im.bytes], { type: 'image/jpeg' }))); } catch (e) { bitmaps.push(null); }
+  }
+  const out = [];
+  for (const p of doc.pages) {
+    const c = document.createElement('canvas');
+    c.width = Math.round(doc.W * sc);
+    c.height = Math.round(doc.H * sc);
+    const g = c.getContext('2d');
+    g.fillStyle = '#ffffff';
+    g.fillRect(0, 0, c.width, c.height);
+    g.scale(sc, sc);
+    for (const d of p.draw) {
+      if (d.t === 'rect') {
+        if (d.fill) { g.fillStyle = d.fill; g.fillRect(d.x, d.y, d.w, d.h); }
+        if (d.stroke) { g.strokeStyle = d.stroke; g.lineWidth = d.lw; g.strokeRect(d.x, d.y, d.w, d.h); }
+      } else if (d.t === 'line') {
+        g.strokeStyle = d.color; g.lineWidth = d.lw;
+        g.beginPath(); g.moveTo(d.x1, d.y1); g.lineTo(d.x2, d.y2); g.stroke();
+      } else if (d.t === 'img') {
+        const b = bitmaps[d.idx];
+        if (b) g.drawImage(b, d.x, d.y, d.w, d.h);
+      } else if (d.t === 'text') {
+        g.font = (d.f === 'I' ? 'italic ' : '') + (d.f === 'B' ? '700 ' : '400 ') + d.size + 'px Arimo, "Liberation Sans", Arial, Helvetica, sans-serif';
+        g.fillStyle = d.color;
+        g.textBaseline = 'alphabetic';
+        const m = g.measureText(d.str).width;
+        if (m > d.pw * 1.002 && m > 0) {
+          g.save(); g.translate(d.x, d.y); g.scale(d.pw / m, 1); g.fillText(d.str, 0, 0); g.restore();
+        } else g.fillText(d.str, d.x, d.y);
+      }
+    }
+    out.push(await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)));
+  }
+  return out;
+}
+
+'use strict';
+/* Logica dei report (valutazione valori) e impaginazione del PDF */
+
+function hdrField(tpl, role) { return (tpl.headerFields || []).find(f => f.role === role); }
+function hdrVal(rep, role) {
+  const f = hdrField(rep.tpl, role);
+  return f ? String(rep.header[f.id] || '') : '';
+}
+function repPlant(rep) { return hdrVal(rep, 'plant').trim(); }
+function repDate(rep) { return hdrVal(rep, 'date') || (rep.createdAt ? new Date(rep.createdAt).toISOString().slice(0, 10) : ''); }
+function itemVal(rep, it) { return rep.values[it.id] || { a: '', p: '', n: '' }; }
+function hasNum(v) { return v !== null && v !== undefined && v !== '' && !isNaN(+v); }
+function isAlert(it, v) {
+  if (v == null || String(v).trim() === '') return false;
+  if (it.type === 'number') {
+    const n = parseNum(v);
+    if (isNaN(n)) return false;
+    if (hasNum(it.min) && n < +it.min) return true;
+    if (hasNum(it.max) && n > +it.max) return true;
+    return false;
+  }
+  return (it.alert || []).some(a => norm(a) === norm(v));
+}
+function rangeText(it) {
+  const u = it.unit ? ' ' + it.unit : '';
+  if (hasNum(it.min) && hasNum(it.max)) return fmtNum(+it.min) + ' – ' + fmtNum(+it.max) + u;
+  if (hasNum(it.min)) return '≥ ' + fmtNum(+it.min) + u;
+  if (hasNum(it.max)) return '≤ ' + fmtNum(+it.max) + u;
+  return '';
+}
+function displayVal(it, v) {
+  if (v == null) return '';
+  const s = String(v).trim();
+  if (!s) return '';
+  if (it.type === 'number') {
+    const n = parseNum(s);
+    if (!isNaN(n)) return fmtNum(n) + (it.unit ? ' ' + it.unit : '');
+  }
+  return s;
+}
+function repStats(rep) {
+  let total = 0, done = 0, alerts = 0;
+  const secs = {};
+  for (const s of rep.tpl.sections) {
+    let st = 0, sd = 0, sa = 0;
+    for (const it of s.items) {
+      const v = itemVal(rep, it);
+      total++; st++;
+      const full = String(v.a || '').trim() && (it.single || String(v.p || '').trim());
+      if (full) { done++; sd++; }
+      if (isAlert(it, v.a) || (!it.single && isAlert(it, v.p))) { alerts++; sa++; }
+    }
+    secs[s.id] = { total: st, done: sd, alerts: sa };
+  }
+  return { total, done, alerts, secs };
+}
+function fileBase(rep, st) {
+  const pat = (st && st.filePattern) || DEFAULT_SETTINGS.filePattern;
+  const s = pat
+    .replace(/\{impianto\}/gi, repPlant(rep) || 'Impianto')
+    .replace(/\{data\}/gi, fmtDate(repDate(rep), '-'))
+    .replace(/\{modello\}/gi, rep.tpl.name || rep.tpl.title || 'Report')
+    .replace(/\{tecnico\}/gi, hdrVal(rep, 'tech'));
+  return safeFile(s);
+}
+function fmtHeader(f, v) {
+  if (!v) return '';
+  if (f.type === 'date') return fmtDate(v);
+  if (f.type === 'number') { const n = parseNum(v); return isNaN(n) ? v : fmtNum(n); }
+  return v;
+}
+
+/**
+ * Crea il PDF del report.
+ * opts: { photos:[{blob,w,h,caption}], logo:{blob,w,h}|null, includePhotos, summary, photosPerRow }
+ */
+async function buildReportPdf(rep, st, opts) {
+  const tpl = rep.tpl;
+  const doc = new PdfDoc();
+  const W = doc.W, H = doc.H, M = 30, CW = W - 2 * M;
+  const ACC = st.accent || '#0B4F5C';
+  const INK = '#17242A', INK2 = '#4D5D64', INK3 = '#7D8B91', LINE = '#CFD8DB', RED = '#C62828', REDBG = '#FDECEA', ZEBRA = '#F7F9FA';
+  const BOTTOM = H - 40;
+  let y = M;
+  let page = 0;
+  const newPage = () => { doc.addPage(); page++; y = M; };
+  const room = need => y + need <= BOTTOM;
+  newPage();
+
+  /* ---------- intestazione ---------- */
+  let logoBottom = M;
+  let rightW = 0;
+  if (opts.logo && opts.logo.blob) {
+    const bytes = new Uint8Array(await opts.logo.blob.arrayBuffer());
+    const idx = doc.addImage(bytes, opts.logo.w, opts.logo.h);
+    const sc = Math.min(130 / opts.logo.w, 48 / opts.logo.h);
+    const lw = opts.logo.w * sc, lh = opts.logo.h * sc;
+    doc.image(idx, W - M - lw, M - 2, lw, lh);
+    logoBottom = M - 2 + lh;
+    rightW = lw + 14;
+  }
+  const tLines = doc.wrap(tpl.title || 'Report', 'B', 16, CW - rightW);
+  for (const l of tLines) { doc.text(l, M, y + 14, { f: 'B', size: 16, color: INK }); y += 19; }
+  if (st.azienda) {
+    doc.text(st.azienda, M, y + 9, { f: 'B', size: 9, color: ACC });
+    y += 13;
+  }
+  if (tpl.subtitle) {
+    y += 2;
+    for (const l of doc.wrap(tpl.subtitle, 'I', 7.6, CW - rightW)) { doc.text(l, M, y + 7.5, { f: 'I', size: 7.6, color: INK3 }); y += 9.4; }
+  }
+  y = Math.max(y, logoBottom) + 7;
+  doc.rect(M, y, CW, 2.2, { fill: ACC });
+  y += 11;
+
+  /* ---------- dati intervento (griglia 2 colonne) ---------- */
+  const fields = (tpl.headerFields || []).filter(f => f.type !== 'hidden');
+  const cw2 = CW / 2;
+  for (let i = 0; i < fields.length; i += 2) {
+    const pair = fields.slice(i, i + 2);
+    const cells = pair.map(f => {
+      const lab = doc.wrap(f.label, 'R', 7, cw2 - 14);
+      const val = doc.wrap(fmtHeader(f, rep.header[f.id] || '') || '—', 'B', 10, cw2 - 14);
+      return { lab, val, h: 6 + lab.length * 8.6 + 3 + val.length * 12.2 + 4 };
+    });
+    const rh = Math.max(...cells.map(c => c.h));
+    if (!room(rh)) newPage();
+    cells.forEach((c, k) => {
+      const x = M + k * cw2;
+      const full = pair.length === 1;
+      const w = full ? CW : cw2;
+      doc.rect(x, y, w, rh, { stroke: LINE, lw: 0.6 });
+      let yy = y + 6;
+      for (const l of c.lab) { doc.text(l, x + 7, yy + 6.2, { size: 7, color: INK3 }); yy += 8.6; }
+      yy += 3;
+      for (const l of c.val) { doc.text(l, x + 7, yy + 9, { f: 'B', size: 10, color: INK }); yy += 12.2; }
+    });
+    y += rh;
+  }
+  y += 12;
+
+  /* ---------- riepilogo anomalie ---------- */
+  const anomalies = [];
+  for (const s of tpl.sections) {
+    for (const it of s.items) {
+      const v = itemVal(rep, it);
+      const aBad = isAlert(it, v.a), pBad = !it.single && isAlert(it, v.p);
+      if (aBad || pBad) {
+        const parts = [];
+        if (it.single) parts.push(displayVal(it, v.a));
+        else {
+          if (String(v.a || '').trim()) parts.push('arrivo ' + displayVal(it, v.a));
+          if (String(v.p || '').trim()) parts.push('partenza ' + displayVal(it, v.p));
+        }
+        const rt = it.type === 'number' ? rangeText(it) : '';
+        anomalies.push((it.num ? it.num + '. ' : '') + it.label + ': ' + parts.join(' · ') + (rt ? '  (rif. ' + rt + ')' : ''));
+      }
+    }
+  }
+  if (opts.summary !== false && anomalies.length) {
+    const lines = [];
+    for (const a of anomalies) {
+      const wl = doc.wrap(a, 'R', 8.4, CW - 26);
+      wl.forEach((l, k) => lines.push({ t: l, first: k === 0 }));
+    }
+    const bh = 22 + lines.length * 10.6 + 6;
+    if (!room(Math.min(bh, 120))) newPage();
+    doc.rect(M, y, CW, bh, { fill: REDBG });
+    doc.rect(M, y, 3, bh, { fill: RED });
+    doc.text('Valori fuori riferimento / anomalie (' + anomalies.length + ')', M + 12, y + 14, { f: 'B', size: 9, color: RED });
+    let yy = y + 22;
+    for (const l of lines) {
+      if (l.first) doc.rect(M + 13, yy + 3.2, 3, 3, { fill: RED });
+      doc.text(l.t, M + 22, yy + 7.8, { size: 8.4, color: INK });
+      yy += 10.6;
+    }
+    y += bh + 12;
+  }
+
+  /* ---------- riferimenti alle foto nella colonna note ---------- */
+  const photoRefs = {};
+  if (opts.includePhotos !== false) {
+    (opts.photos || []).forEach((p, i) => {
+      if (p.itemId) (photoRefs[p.itemId] = photoRefs[p.itemId] || []).push(i + 1);
+    });
+  }
+
+  /* ---------- tabelle per categoria ---------- */
+  const COLS = [
+    { w: 22, key: 'num' }, { w: 152, key: 'label' }, { w: 92, key: 'ref' },
+    { w: 74, key: 'a' }, { w: 74, key: 'p' },
+  ];
+  COLS.push({ w: CW - COLS.reduce((s, c) => s + c.w, 0), key: 'n' });
+  const PAD = 4, FS = 7.9, LH = 9.6, VFS = 8.4;
+
+  function colHeader() {
+    const heads = ['N.', 'Voce di controllo', 'Riferimento', tpl.colA || 'Arrivo', tpl.colB || 'Partenza', 'Note / dettagli'];
+    const wrapped = heads.map((t, i) => doc.wrap(t, 'B', 6.8, COLS[i].w - 2 * PAD));
+    const hh = Math.max(...wrapped.map(w => w.length)) * 8.2 + 8;
+    let x = M;
+    doc.rect(M, y, CW, hh, { fill: '#E9EEF0' });
+    wrapped.forEach((ls, i) => {
+      let yy = y + 4;
+      for (const l of ls) { doc.text(l, x + PAD, yy + 6.2, { f: 'B', size: 6.8, color: INK2 }); yy += 8.2; }
+      x += COLS[i].w;
+    });
+    y += hh;
+  }
+  function band(title) {
+    doc.rect(M, y, CW, 18, { fill: ACC });
+    doc.text(title, M + 8, y + 12.4, { f: 'B', size: 9.2, color: '#FFFFFF' });
+    y += 18;
+  }
+  function rowLayout(it) {
+    const v = itemVal(rep, it);
+    const aBad = isAlert(it, v.a), pBad = !it.single && isAlert(it, v.p);
+    let ref = it.ref || '';
+    if (!ref && it.type === 'number') ref = rangeText(it);
+    const cells = [
+      { t: it.num || '', f: 'B', s: FS, c: INK2 },
+      { t: it.label, f: 'R', s: FS, c: INK },
+      { t: ref, f: 'R', s: 7.4, c: INK2 },
+      { t: displayVal(it, v.a), f: 'B', s: VFS, c: aBad ? RED : INK, bad: aBad },
+      { t: it.single ? '' : displayVal(it, v.p), f: 'B', s: VFS, c: pBad ? RED : INK, bad: pBad },
+      { t: [v.n || '', photoRefs[it.id] ? 'Foto n. ' + photoRefs[it.id].join(', ') : ''].filter(Boolean).join('\n'), f: 'R', s: 7.4, c: INK },
+    ];
+    const widths = COLS.map(c => c.w);
+    if (it.single) { widths[3] = COLS[3].w + COLS[4].w; widths[4] = 0; }
+    cells.forEach((c, i) => { c.lines = widths[i] ? doc.wrap(c.t, c.f, c.s, widths[i] - 2 * PAD) : []; c.w = widths[i]; });
+    const hgt = Math.max(16, ...cells.map(c => c.lines.length * (c.s + 1.9) + 2 * PAD + 1));
+    return { cells, h: hgt };
+  }
+  function drawRow(r, zebra) {
+    if (zebra) doc.rect(M, y, CW, r.h, { fill: ZEBRA });
+    let x = M;
+    r.cells.forEach(c => {
+      if (!c.w) return;
+      if (c.bad) doc.rect(x, y, c.w, r.h, { fill: REDBG });
+      let yy = y + PAD;
+      for (const l of c.lines) { doc.text(l, x + PAD, yy + c.s * 0.86, { f: c.f, size: c.s, color: c.c }); yy += c.s + 1.9; }
+      x += c.w;
+    });
+    // griglia
+    doc.line(M, y + r.h, M + CW, y + r.h, LINE, 0.5);
+    x = M;
+    r.cells.forEach((c, i) => {
+      if (i > 0 && c.w) doc.line(x, y, x, y + r.h, LINE, 0.5);
+      x += c.w;
+    });
+    doc.line(M, y, M, y + r.h, LINE, 0.5);
+    doc.line(M + CW, y, M + CW, y + r.h, LINE, 0.5);
+    y += r.h;
+  }
+
+  for (const s of tpl.sections) {
+    if (!s.items.length) continue;
+    const rows = s.items.map(rowLayout);
+    const headH = 18 + 24;
+    if (!room(headH + rows[0].h)) newPage();
+    band(s.title);
+    colHeader();
+    rows.forEach((r, i) => {
+      if (!room(r.h)) {
+        newPage();
+        band(s.title + ' (segue)');
+        colHeader();
+      }
+      drawRow(r, i % 2 === 1);
+    });
+    y += 12;
+  }
+
+  /* ---------- note generali ---------- */
+  if (String(rep.notes || '').trim()) {
+    const lines = doc.wrap(rep.notes, 'R', 9, CW - 20);
+    if (!room(18 + 10 + 11.6 * Math.min(lines.length, 3))) newPage();
+    band(tpl.notesTitle || 'Note');
+    let i = 0;
+    while (i < lines.length) {
+      const avail = Math.max(1, Math.floor((BOTTOM - y - 14) / 11.6));
+      const chunk = lines.slice(i, i + avail);
+      const bh = chunk.length * 11.6 + 14;
+      doc.rect(M, y, CW, bh, { stroke: LINE, lw: 0.6 });
+      let yy = y + 7;
+      for (const l of chunk) { doc.text(l, M + 10, yy + 8.6, { size: 9, color: INK }); yy += 11.6; }
+      y += bh;
+      i += chunk.length;
+      if (i < lines.length) { newPage(); band((tpl.notesTitle || 'Note') + ' (segue)'); }
+    }
+    y += 12;
+  }
+
+  /* ---------- documentazione fotografica ---------- */
+  const photos = opts.includePhotos === false ? [] : (opts.photos || []);
+  if (photos.length) {
+    const per = opts.photosPerRow === 1 ? 1 : 2;
+    const gap = 12;
+    const cellW = (CW - gap * (per - 1)) / per;
+    const imgH = per === 1 ? 360 : 196;
+    const title = 'Documentazione fotografica (' + photos.length + ')';
+    let first = true;
+    for (let i = 0; i < photos.length; i += per) {
+      const group = photos.slice(i, i + per);
+      const capLines = group.map((p, k) => doc.wrap((i + k + 1) + '. ' + (p.caption || 'Foto ' + (i + k + 1)), 'R', 8, cellW).slice(0, 3));
+      const rh = imgH + 6 + Math.max(...capLines.map(c => c.length)) * 10 + 12;
+      if (!room((first ? 30 : 0) + rh)) { newPage(); band(title + (first ? '' : ' (segue)')); y += 8; first = false; }
+      if (first) { band(title); y += 8; first = false; }
+      for (let k = 0; k < group.length; k++) {
+        const p = group[k];
+        const x = M + k * (cellW + gap);
+        doc.rect(x, y, cellW, imgH, { fill: '#EEF2F3' });
+        try {
+          const bytes = new Uint8Array(await p.blob.arrayBuffer());
+          const idx = doc.addImage(bytes, p.w, p.h);
+          const sc = Math.min(cellW / p.w, imgH / p.h);
+          const iw = p.w * sc, ih = p.h * sc;
+          doc.image(idx, x + (cellW - iw) / 2, y + (imgH - ih) / 2, iw, ih);
+        } catch (e) { /* immagine non leggibile */ }
+        let yy = y + imgH + 6;
+        for (const l of capLines[k]) { doc.text(l, x, yy + 7.5, { size: 8, color: INK2 }); yy += 10; }
+      }
+      y += rh;
+    }
+  }
+
+  /* ---------- piè di pagina ---------- */
+  const plant = repPlant(rep), date = fmtDate(repDate(rep)), tech = hdrVal(rep, 'tech');
+  const foot = [plant, date, tech].filter(Boolean).join('  ·  ');
+  const n = doc.pages.length;
+  doc.pages.forEach((p, i) => {
+    doc.cur = p;
+    doc.line(M, H - 28, W - M, H - 28, LINE, 0.6);
+    doc.text(foot, M, H - 17, { size: 7.2, color: INK3 });
+    doc.text('Pagina ' + (i + 1) + ' di ' + n, W - M, H - 17, { size: 7.2, color: INK3, align: 'right' });
+    if (st.azienda) doc.text(st.azienda, W / 2, H - 17, { size: 7.2, color: INK3, align: 'center' });
+  });
+
+  const bytes = await doc.output({ title: fileBase(rep, st), author: tech });
+  return { bytes, doc };
+}
+
+'use strict';
+/* Report Impianti — interfaccia */
+
+const S = {
+  templates: [],
+  reports: [],
+  settings: Object.assign({}, DEFAULT_SETTINGS),
+  logo: null,          // {blob,w,h}
+  plants: [],          // [{id,name,folder}]
+  collapsed: {},       // stato categorie chiuse per report
+};
+const app = document.getElementById('app');
+let objectUrls = [];
+
+/* ================================================================ salvataggio */
+const saveQueue = new Map();
+function scheduleSave(store, obj, ms) {
+  const key = store + ':' + obj.id;
+  const ex = saveQueue.get(key);
+  if (ex) clearTimeout(ex.t);
+  const t = setTimeout(() => { saveQueue.delete(key); doSave(store, obj); }, ms == null ? 350 : ms);
+  saveQueue.set(key, { t, store, obj });
+}
+async function doSave(store, obj) {
+  try {
+    await DB.put(store, obj);
+    const ind = document.querySelector('.saved');
+    if (ind) { ind.textContent = '✓ Salvato'; ind.style.opacity = '.8'; }
+  } catch (e) {
+    toast('Errore di salvataggio: ' + e.message);
+  }
+}
+function flushSaves() {
+  for (const [key, v] of saveQueue) { clearTimeout(v.t); saveQueue.delete(key); doSave(v.store, v.obj); }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushSaves(); });
+window.addEventListener('pagehide', flushSaves);
+
+/* ================================================================ router */
+let curPath = '/';
+function go(path, fromPop) {
+  curPath = path || '/';
+  if (!fromPop && !Native.isApp) { try { history.pushState({ p: curPath }, ''); } catch (e) { /* non disponibile */ } }
+  render();
+}
+window.addEventListener('popstate', e => {
+  if (closeTopLayer()) { try { history.pushState({ p: curPath }, ''); } catch (x) { /* ignora */ } return; }
+  go((e.state && e.state.p) || '/', true);
+});
+function parts() { return curPath.split('/').filter(Boolean).map(decodeURIComponent); }
+function parentRoute() {
+  const p = parts();
+  if (!p.length) return null;
+  if (p[0] === 'r' && p[2] === 'struttura') return '/r/' + encodeURIComponent(p[1]);
+  if (p.length >= 2) return p[0] === 'r' ? '/' : '/' + p[0];
+  return '/';
+}
+window.onAndroidBack = () => {
+  if (closeTopLayer()) return true;
+  const pr = parentRoute();
+  if (pr) { go(pr); return true; }
+  return false;
+};
+let lastRoute = '';
+function render() {
+  flushSaves();
+  for (const u of objectUrls) URL.revokeObjectURL(u);
+  objectUrls = [];
+  const p = parts();
+  const routeKey = p.join('/');
+  app.innerHTML = '';
+  let v;
+  if (!p.length) v = viewHome();
+  else if (p[0] === 'r' && p[2] === 'struttura') v = viewStructure('rep', p[1]);
+  else if (p[0] === 'r') v = viewReport(p[1]);
+  else if (p[0] === 't' && p[1]) v = viewStructure('tpl', p[1]);
+  else if (p[0] === 't') v = viewTemplates();
+  else if (p[0] === 'p' && p[1]) v = viewPlant(p[1]);
+  else if (p[0] === 'p') v = viewPlants();
+  else if (p[0] === 's') v = viewSettings();
+  else v = viewHome();
+  if (v) add(app, [v]);
+  if (routeKey !== lastRoute) window.scrollTo(0, 0);
+  lastRoute = routeKey;
+}
+
+/* ================================================================ componenti comuni */
+function bar(title, sub, opts) {
+  opts = opts || {};
+  return h('div', { class: 'bar' + (opts.back ? ' has-back' : '') },
+    opts.back ? h('button', { class: 'ib', onclick: () => go(opts.back), 'aria-label': 'Indietro' }, icon('back')) : null,
+    h('div', { class: 'ttl' }, h('b', null, title), sub ? h('small', null, sub) : null),
+    opts.saved ? h('span', { class: 'saved' }) : null,
+    opts.actions || null);
+}
+function bottomNav(active) {
+  const it = (key, path, ic, label) => h('button', { class: active === key ? 'on' : '', onclick: () => go(path) },
+    h('span', { class: 'pillbg' }, icon(ic)), label);
+  return h('div', { class: 'nav' },
+    it('home', '/', 'list', 'Report'),
+    it('plants', '/p', 'factory', 'Impianti'),
+    it('tpl', '/t', 'layers', 'Modelli'),
+    it('set', '/s', 'settings', 'Impostazioni'));
+}
+function field(label, input) { return h('label', { class: 'fld' }, h('span', null, label), input); }
+function group(label, el) { return h('div', { class: 'fld' }, h('span', null, label), el); }
+function plantsList() {
+  const m = new Map();
+  for (const p of S.plants) m.set(norm(p.name), { name: p.name, plant: p, reports: [] });
+  for (const r of S.reports) {
+    const n = repPlant(r);
+    if (!n) continue;
+    const k = norm(n);
+    if (!m.has(k)) m.set(k, { name: n, plant: null, reports: [] });
+    m.get(k).reports.push(r);
+  }
+  for (const v of m.values()) v.reports.sort(byDateDesc);
+  return Array.from(m.values()).sort((a, b) => {
+    const da = a.reports[0] ? repDate(a.reports[0]) : '', db = b.reports[0] ? repDate(b.reports[0]) : '';
+    return db.localeCompare(da) || a.name.localeCompare(b.name);
+  });
+}
+function byDateDesc(a, b) {
+  const d = repDate(b).localeCompare(repDate(a));
+  return d || (b.createdAt || 0) - (a.createdAt || 0);
+}
+function findPrevious(rep) {
+  const plant = norm(repPlant(rep));
+  if (!plant) return null;
+  const d = repDate(rep);
+  const cands = S.reports.filter(r => r.id !== rep.id && norm(repPlant(r)) === plant &&
+    (repDate(r) < d || (repDate(r) === d && (r.createdAt || 0) < (rep.createdAt || 0))));
+  cands.sort(byDateDesc);
+  return cands.find(r => r.templateId === rep.templateId) || cands[0] || null;
+}
+function lastForPlant(plant, tplId) {
+  const k = norm(plant);
+  if (!k) return null;
+  const c = S.reports.filter(r => norm(repPlant(r)) === k).sort(byDateDesc);
+  return c.find(r => r.templateId === tplId) || c[0] || null;
+}
+function avatarDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  if (!m) return h('div', { class: 'avatar' }, '—');
+  return h('div', { class: 'avatar' }, h('div', null, m[3], h('small', null, MONTHS[+m[2] - 1].slice(0, 3).toUpperCase())));
+}
+function reportRow(r, showPlant) {
+  const st = repStats(r);
+  const tech = hdrVal(r, 'tech');
+  return h('div', { class: 'li', onclick: () => go('/r/' + encodeURIComponent(r.id)) },
+    avatarDate(repDate(r)),
+    h('div', { class: 'grow' },
+      h('div', { class: 'ttl2' }, showPlant === false ? fmtDate(repDate(r)) : (repPlant(r) || 'Impianto non indicato')),
+      h('div', { class: 'sub' }, [r.tpl.name || r.tpl.title, tech].filter(Boolean).join(' · ')),
+      h('div', { class: 'badges' },
+        h('span', { class: 'bdg' + (st.done === st.total && st.total ? ' green' : '') }, icon('check'), st.done + '/' + st.total),
+        st.alerts ? h('span', { class: 'bdg red' }, icon('alert'), st.alerts + (st.alerts === 1 ? ' anomalia' : ' anomalie')) : null,
+        (r.photos || []).length ? h('span', { class: 'bdg' }, icon('camera'), r.photos.length) : null)),
+    h('button', {
+      class: 'ib', style: { color: 'var(--ink-3)' }, onclick: e => { e.stopPropagation(); reportMenu(r); },
+    }, icon('more')));
+}
+function reportMenu(r) {
+  menu(repPlant(r) || 'Report', [
+    { icon: 'edit', label: 'Apri e modifica', do: () => go('/r/' + encodeURIComponent(r.id)) },
+    { icon: 'pdf', label: 'Genera PDF / JPEG', do: () => exportSheet(r) },
+    { icon: 'dup', label: 'Nuovo intervento partendo da questo', do: () => newReportSheet({ plant: repPlant(r), from: r }) },
+    { icon: 'trash', label: 'Elimina report', red: true, do: () => deleteReport(r) },
+  ]);
+}
+async function deleteReport(r) {
+  const ok = await ask('Eliminare il report?', (repPlant(r) || 'Report') + ' del ' + fmtDate(repDate(r)) + '. Verranno eliminate anche le foto allegate. L\'operazione non si può annullare.',
+    [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+  if (!ok) return;
+  for (const p of r.photos || []) await DB.del('photos', p.id);
+  await DB.del('reports', r.id);
+  S.reports = S.reports.filter(x => x.id !== r.id);
+  toast('Report eliminato');
+  if (parts()[0] === 'r') go('/'); else render();
+}
+
+/* ================================================================ HOME */
+let homeQuery = '';
+function viewHome() {
+  const listBox = h('div');
+  const search = h('input', { class: 'in', placeholder: 'Cerca impianto, data, modello…', value: homeQuery, type: 'search' });
+  const fill = () => {
+    listBox.innerHTML = '';
+    const q = norm(homeQuery);
+    const reps = S.reports.slice().sort(byDateDesc).filter(r => !q ||
+      norm([repPlant(r), fmtDate(repDate(r)), r.tpl.name, hdrVal(r, 'tech')].join(' ')).includes(q));
+    if (!S.reports.length) {
+      listBox.appendChild(h('div', { class: 'empty' }, icon('pdf'), h('b', null, 'Nessun report'),
+        'Tocca «Nuovo report» per compilare la prima checklist direttamente dal telefono.'));
+      return;
+    }
+    if (!reps.length) { listBox.appendChild(h('div', { class: 'empty' }, 'Nessun risultato per «' + homeQuery + '»')); return; }
+    let month = null, card = null;
+    for (const r of reps) {
+      const m = monthLabel(repDate(r));
+      if (m !== month) {
+        month = m;
+        listBox.appendChild(h('h3', { class: 'sec' }, m));
+        card = h('div', { class: 'card' });
+        listBox.appendChild(card);
+      }
+      card.appendChild(reportRow(r));
+    }
+  };
+  search.addEventListener('input', () => { homeQuery = search.value; fill(); });
+  fill();
+  return [
+    bar('Report Impianti', S.reports.length + (S.reports.length === 1 ? ' report' : ' report salvati')),
+    h('div', { class: 'page with-nav' }, h('div', { class: 'search' }, icon('search'), search), listBox),
+    h('button', { class: 'fab', onclick: () => newReportSheet({}) }, icon('plus'), 'Nuovo report'),
+    bottomNav('home'),
+  ];
+}
+
+/* ================================================================ NUOVO REPORT */
+function newReportSheet(o) {
+  o = o || {};
+  if (!S.templates.length) { toast('Crea prima un modello'); return; }
+  sheet(s => {
+    const lastTpl = (o.from && o.from.templateId) || S.settings.lastTemplate;
+    let tpl = S.templates.find(t => t.id === lastTpl) || S.templates[0];
+    const tplSel = h('select', { class: 'in', id: 'nr-tpl' }, S.templates.map(t => h('option', { value: t.id }, t.name)));
+    tplSel.value = tpl.id;
+    const plantIn = h('input', { class: 'in', id: 'nr-plant', value: o.plant || '', placeholder: 'Cerca o scrivi un nuovo impianto', autocomplete: 'off' });
+    const plantBox = h('div', { class: 'plant-pick' });
+    const dateIn = h('input', { class: 'in', id: 'nr-date', type: 'date', value: todayISO() });
+    const prevBox = h('div');
+    const opt = { struct: true, header: true, notes: true, general: true };
+    let prev = null;
+    const paintPlants = () => {
+      plantBox.innerHTML = '';
+      const q = norm(plantIn.value);
+      const list = plantsList();
+      const exact = list.some(p => norm(p.name) === q);
+      const shown = list.filter(p => !q || norm(p.name).includes(q)).slice(0, 8);
+      for (const p of shown) {
+        const on = norm(p.name) === q;
+        plantBox.appendChild(h('button', {
+          class: 'chip' + (on ? ' on' : ''), onclick: () => { plantIn.value = p.name; refresh(); },
+        }, on ? icon('check', 'sm') : icon('factory', 'sm'), p.name));
+      }
+      if (q && !exact) {
+        plantBox.appendChild(h('div', { class: 'small', style: { width: '100%', color: 'var(--pri)', marginTop: '2px' } },
+          icon('plus', 'sm'), ' Nuovo impianto: verrà aggiunto all\'elenco'));
+      }
+    };
+    const refresh = () => {
+      tpl = S.templates.find(t => t.id === tplSel.value) || tpl;
+      paintPlants();
+      prev = o.from && norm(repPlant(o.from)) === norm(plantIn.value) ? o.from : lastForPlant(plantIn.value, tpl.id);
+      prevBox.innerHTML = '';
+      if (!prev) return;
+      const ck = (k, label) => h('label', { class: 'chk' }, h('input', {
+        type: 'checkbox', checked: opt[k], onchange: e => { opt[k] = e.target.checked; },
+      }), h('span', null, label));
+      prevBox.appendChild(h('div', { class: 'card', style: { boxShadow: 'none', border: '1.5px solid var(--line)', marginTop: '14px' } },
+        h('div', { class: 'card-b', style: { paddingTop: '12px' } },
+          h('div', { style: { fontWeight: 600 } }, 'Parti dall\'ultimo intervento del ' + fmtDate(repDate(prev))),
+          h('div', { class: 'small muted' }, 'I valori registrati allora verranno mostrati accanto a ogni voce come riferimento.'),
+          ck('struct', 'Mantieni la stessa struttura (voci aggiunte/tolte per questo impianto)'),
+          ck('header', 'Copia i dati dell\'impianto (tipologia torre, …)'),
+          ck('notes', 'Copia le note delle singole voci'),
+          ck('general', 'Copia le note generali (da aggiornare)'))));
+    };
+    tplSel.addEventListener('change', refresh);
+    plantIn.addEventListener('input', refresh);
+    refresh();
+    return [
+      h('h2', null, 'Nuovo report'),
+      S.templates.length > 1 ? field('Modello di checklist', tplSel) : null,
+      field('Impianto', plantIn), plantBox,
+      field('Data intervento', dateIn),
+      prevBox,
+      h('div', { class: 'btns' },
+        h('button', { class: 'btn', onclick: () => s.close() }, 'Annulla'),
+        h('button', {
+          class: 'btn pri', onclick: async () => {
+            const name = plantIn.value.trim();
+            if (!name) { toast('Scegli o scrivi l\'impianto'); plantIn.focus(); return; }
+            const r = await ensurePlant(name);
+            const rep = await createReport(tpl, r.p.name, dateIn.value, prev, opt);
+            s.close();
+            if (r.isNew) toast('«' + r.p.name + '» aggiunto all\'elenco impianti');
+            go('/r/' + encodeURIComponent(rep.id));
+          },
+        }, icon('check'), 'Crea')),
+    ];
+  });
+}
+
+/* ---------- elenco impianti ---------- */
+function plantByName(name) { return S.plants.find(p => norm(p.name) === norm(name)); }
+async function ensurePlant(name) {
+  name = String(name || '').trim();
+  if (!name) return { p: null, isNew: false };
+  let p = plantByName(name);
+  if (p) return { p, isNew: false };
+  p = { id: 'pl' + uid(), name, folder: name, createdAt: Date.now() };
+  S.plants.push(p);
+  await DB.setSetting('plants', S.plants);
+  return { p, isNew: true };
+}
+function spName(s) {
+  return String(s || '').normalize('NFC').replace(/[\\/:*?"<>|#%\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '').replace(/^~\$?/, '').slice(0, 100) || 'Senza nome';
+}
+function plantFolder(name) {
+  const p = plantByName(name);
+  return spName((p && p.folder) || name || 'Impianto');
+}
+function dateFolders(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || todayISO()) || /^(\d{4})-(\d{2})-(\d{2})/.exec(todayISO());
+  return [m[1], m[2] + ' - ' + MONTHS[+m[2] - 1], m[3]];
+}
+function reportFolder(rep) {
+  return [plantFolder(repPlant(rep))].concat(dateFolders(repDate(rep))).join('/');
+}
+async function createReport(tpl, plant, date, prev, opt) {
+  const struct = prev && opt.struct ? clone(prev.tpl) : clone(tpl);
+  delete struct.createdAt; delete struct.updatedAt;
+  const rep = {
+    id: 'r' + uid(), templateId: tpl.id, tpl: struct, header: {}, values: {}, notes: '', photos: [],
+    createdAt: Date.now(), updatedAt: Date.now(),
+  };
+  for (const f of struct.headerFields) {
+    let v = '';
+    if (f.role === 'plant') v = plant;
+    else if (f.role === 'date') v = date || todayISO();
+    else if (f.role === 'tech') v = S.settings.tecnico || (prev ? prev.header[f.id] || '' : '');
+    else if (f.def === 'today') v = todayISO();
+    else if (f.def === 'now') v = nowHM();
+    else v = f.def || '';
+    if (prev && opt.header && prev.header[f.id] && (f.role === 'keep' || (f.role === '' && (f.type === 'text' || f.type === 'choice')))) v = prev.header[f.id];
+    rep.header[f.id] = v;
+  }
+  if (prev && opt.notes) {
+    for (const s of struct.sections) for (const it of s.items) {
+      const pv = prev.values[it.id];
+      if (pv && pv.n) rep.values[it.id] = { a: '', p: '', n: pv.n };
+    }
+  }
+  if (prev && opt.general) rep.notes = prev.notes || '';
+  S.reports.push(rep);
+  await DB.put('reports', rep);
+  S.settings.lastTemplate = tpl.id;
+  DB.setSetting('lastTemplate', tpl.id);
+  return rep;
+}
+
+/* ================================================================ REPORT */
+function viewReport(id) {
+  const rep = S.reports.find(r => r.id === id);
+  if (!rep) { setTimeout(() => go('/'), 0); return null; }
+  const tpl = rep.tpl;
+  const prev = findPrevious(rep);
+  const collapsed = S.collapsed[rep.id] || (S.collapsed[rep.id] = {});
+  const save = () => { rep.updatedAt = Date.now(); scheduleSave('reports', rep); refreshTop(); };
+
+  const subEl = h('small');
+  const titleEl = h('b');
+  const progress = h('i');
+  const summary = h('div', { class: 'summary' });
+  const tabDots = {};
+  const secCounts = {};
+  function refreshTop() {
+    const st = repStats(rep);
+    titleEl.textContent = repPlant(rep) || 'Nuovo report';
+    subEl.textContent = [fmtDate(repDate(rep)), tpl.name].filter(Boolean).join(' · ');
+    progress.style.width = (st.total ? Math.round(st.done / st.total * 100) : 0) + '%';
+    summary.innerHTML = '';
+    add(summary, [
+      h('span', { class: 'bdg' + (st.done === st.total ? ' green' : '') }, icon('check'), st.done + ' di ' + st.total + ' voci compilate'),
+      st.alerts ? h('span', { class: 'bdg red' }, icon('alert'), st.alerts + (st.alerts === 1 ? ' anomalia' : ' anomalie')) : null,
+      prev ? h('span', { class: 'bdg' }, 'Precedente: ' + fmtDate(repDate(prev))) : null,
+    ]);
+    for (const s of tpl.sections) {
+      const ss = st.secs[s.id];
+      if (tabDots[s.id]) tabDots[s.id].className = 'dot' + (ss.alerts ? ' alert' : ss.done === ss.total && ss.total ? ' full' : '');
+      if (secCounts[s.id]) secCounts[s.id].textContent = ss.done + '/' + ss.total;
+    }
+  }
+
+  const topBar = h('div', { class: 'bar has-back' },
+    h('button', { class: 'ib', onclick: () => go('/') }, icon('back')),
+    h('div', { class: 'ttl' }, titleEl, subEl),
+    h('span', { class: 'saved' }),
+    h('button', { class: 'ib', onclick: () => moreMenu() }, icon('more')));
+
+  function moreMenu() {
+    const base = S.templates.find(t => t.id === rep.templateId);
+    menu('Report', [
+      { icon: 'pdf', label: 'Genera PDF / JPEG', do: () => exportSheet(rep) },
+      { icon: 'layers', label: 'Modifica voci e categorie di questo report', do: () => go('/r/' + encodeURIComponent(rep.id) + '/struttura') },
+      base ? { icon: 'refresh', label: 'Aggiorna struttura dal modello «' + base.name + '»', do: () => syncFromTemplate(rep, base) } : null,
+      { icon: 'check', label: 'Copia arrivo → partenza (tutti i campi vuoti)', do: () => { copyAll(rep, null); render(); toast('Valori copiati'); } },
+      { icon: 'dup', label: 'Nuovo intervento partendo da questo', do: () => newReportSheet({ plant: repPlant(rep), from: rep }) },
+      { icon: 'trash', label: 'Elimina report', red: true, do: () => deleteReport(rep) },
+    ]);
+  }
+
+  /* --- schede di navigazione --- */
+  const page = h('div', { class: 'page' });
+  const tabs = h('div', { class: 'tabs' });
+  const jump = el => {
+    const y = el.getBoundingClientRect().top + window.scrollY - 112;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  };
+
+  /* --- dati intervento --- */
+  const infoCard = h('div', { class: 'card', id: 'sec-info' });
+  {
+    const dls = [];
+    const body = h('div', { class: 'card-b grid2' });
+    for (const f of tpl.headerFields) {
+      let inp;
+      const val = rep.header[f.id] || '';
+      if (f.type === 'date') inp = h('input', { class: 'in', type: 'date', value: val });
+      else if (f.type === 'time') inp = h('input', { class: 'in', type: 'time', value: val });
+      else if (f.type === 'number') inp = h('input', { class: 'in', inputmode: 'decimal', value: val });
+      else if (f.type === 'choice' || f.role === 'plant') {
+        const dlId = 'dl-' + f.id;
+        const opts = f.role === 'plant' ? plantsList().map(p => p.name) : (f.options || []);
+        dls.push(h('datalist', { id: dlId }, opts.map(o => h('option', { value: o }))));
+        inp = h('input', { class: 'in', list: dlId, value: val, autocomplete: 'off' });
+      } else inp = h('input', { class: 'in', value: val });
+      inp.addEventListener('input', () => { rep.header[f.id] = inp.value; save(); });
+      if (f.role === 'plant') inp.addEventListener('change', async () => { const r = await ensurePlant(inp.value); if (r.isNew) toast('«' + r.p.name + '» aggiunto all\'elenco impianti'); });
+      const wide = f.label.length > 34 || f.role === 'plant' || f.type === 'choice';
+      body.appendChild(h('label', { class: 'fld' + (wide ? ' full' : '') }, h('span', null, f.label), inp));
+    }
+    add(body, dls);
+    infoCard.append(h('div', { class: 'card-h' }, icon('info'), h('span', { class: 'grow' }, 'Dati intervento')), body);
+    tabs.appendChild(h('button', { onclick: () => jump(infoCard) }, 'Dati'));
+  }
+  page.append(tabs, h('div', { class: 'progress' }, progress), summary, infoCard);
+
+  /* --- categorie --- */
+  for (const s of tpl.sections) {
+    const card = h('div', { class: 'card' + (collapsed[s.id] ? ' collapsed' : '') });
+    const cnt = h('span', { class: 'count' });
+    secCounts[s.id] = cnt;
+    const hd = h('div', { class: 'card-h click', onclick: () => { card.classList.toggle('collapsed'); collapsed[s.id] = card.classList.contains('collapsed'); } },
+      h('span', { class: 'grow' }, s.title), cnt,
+      h('button', {
+        class: 'ib', style: { width: '36px', height: '36px', color: 'var(--ink-3)' }, title: 'Copia arrivo → partenza',
+        onclick: e => { e.stopPropagation(); sectionMenu(s); },
+      }, icon('more', 'sm')),
+      icon('chev', 'chev'));
+    const body = h('div', { class: 'card-b' });
+    if (!s.items.length) body.appendChild(h('div', { class: 'muted small', style: { padding: '10px 0' } }, 'Nessuna voce. Aggiungile da ⋮ › Modifica voci e categorie.'));
+    for (const it of s.items) body.appendChild(itemEl(rep, it, prev, save));
+    card.append(hd, body);
+    page.appendChild(card);
+    const dot = h('span', { class: 'dot' });
+    tabDots[s.id] = dot;
+    tabs.appendChild(h('button', { onclick: () => { card.classList.remove('collapsed'); collapsed[s.id] = false; jump(card); } }, dot, shortTitle(s.title)));
+  }
+  function sectionMenu(s) {
+    menu(s.title, [
+      { icon: 'check', label: 'Copia arrivo → partenza (campi vuoti)', do: () => { copyAll(rep, s); render(); toast('Valori copiati'); } },
+      { icon: 'layers', label: 'Modifica voci di questa categoria', do: () => go('/r/' + encodeURIComponent(rep.id) + '/struttura') },
+    ]);
+  }
+
+  /* --- foto --- */
+  const photoCard = photosCard(rep, save);
+  page.appendChild(photoCard);
+  tabs.appendChild(h('button', { onclick: () => jump(photoCard) }, icon('camera', 'sm'), 'Foto'));
+
+  /* --- note generali --- */
+  const notes = autosize(h('textarea', { class: 'in', placeholder: 'Funzionamento, interventi eseguiti, segnalazioni…', value: rep.notes || '' }));
+  notes.addEventListener('input', () => { rep.notes = notes.value; save(); });
+  const prevNotes = prev && prev.notes && prev.notes !== rep.notes ? h('button', {
+    class: 'btn ghost', style: { padding: '0', minHeight: '36px', marginTop: '6px' },
+    onclick: () => {
+      sheet(s2 => [h('h2', null, 'Note del ' + fmtDate(repDate(prev))), h('div', { style: { whiteSpace: 'pre-wrap', marginTop: '10px', fontSize: '14.5px' } }, prev.notes),
+        h('div', { class: 'btns' }, h('button', { class: 'btn', onclick: () => s2.close() }, 'Chiudi'),
+          h('button', { class: 'btn pri', onclick: () => { notes.value = (notes.value ? notes.value + '\n\n' : '') + prev.notes; notes.dispatchEvent(new Event('input')); s2.close(); } }, 'Inserisci'))]);
+    },
+  }, icon('dup', 'sm'), 'Vedi note dell\'intervento precedente') : null;
+  const notesCard = h('div', { class: 'card' },
+    h('div', { class: 'card-h' }, icon('note'), h('span', { class: 'grow' }, tpl.notesTitle || 'Note')),
+    h('div', { class: 'card-b', style: { paddingTop: '12px' } }, notes, prevNotes));
+  page.appendChild(notesCard);
+  tabs.appendChild(h('button', { onclick: () => jump(notesCard) }, 'Note'));
+
+  refreshTop();
+  return [
+    topBar, page,
+    h('div', { class: 'bottombar' },
+      h('button', { class: 'btn', style: { flex: '0 0 auto' }, onclick: () => { flushSaves(); go('/r/' + encodeURIComponent(rep.id) + '/struttura'); } }, icon('layers')),
+      h('button', { class: 'btn acc', onclick: () => { flushSaves(); exportSheet(rep); } }, icon('pdf'), 'Genera report e pacchetto')),
+  ];
+}
+function shortTitle(t) {
+  const s = String(t).replace(/\s*\(.*?\)\s*/g, ' ').trim();
+  return s.length > 22 ? s.slice(0, 20) + '…' : s;
+}
+function copyAll(rep, section) {
+  for (const s of rep.tpl.sections) {
+    if (section && s.id !== section.id) continue;
+    for (const it of s.items) {
+      if (it.single) continue;
+      const v = rep.values[it.id];
+      if (v && String(v.a || '').trim() && !String(v.p || '').trim()) v.p = v.a;
+    }
+  }
+  rep.updatedAt = Date.now();
+  scheduleSave('reports', rep, 0);
+}
+async function syncFromTemplate(rep, base) {
+  const ok = await ask('Aggiornare la struttura?', 'Le voci e le categorie di questo report verranno sostituite con quelle del modello «' + base.name +
+    '». I valori già inseriti nelle voci presenti in entrambi vengono mantenuti.', [{ label: 'Annulla', value: false }, { label: 'Aggiorna', value: true, cls: 'pri' }]);
+  if (!ok) return;
+  const st = clone(base);
+  delete st.createdAt; delete st.updatedAt;
+  for (const f of st.headerFields) if (rep.header[f.id] === undefined) rep.header[f.id] = '';
+  rep.tpl = st;
+  rep.updatedAt = Date.now();
+  await DB.put('reports', rep);
+  render();
+  toast('Struttura aggiornata');
+}
+
+/* --- singola voce di controllo --- */
+function itemEl(rep, it, prev, onChange) {
+  const v = rep.values[it.id] || (rep.values[it.id] = { a: '', p: '', n: '' });
+  const wrap = h('div', { class: 'item' });
+  const warn = h('div', { class: 'warn', style: { display: 'none' } });
+  let noteOpen = !!v.n;
+  const noteIn = autosize(h('textarea', { class: 'in note-in', placeholder: 'Note / dettagli', value: v.n || '' }));
+  noteIn.addEventListener('input', () => { v.n = noteIn.value; noteBtn.classList.toggle('on', !!v.n); onChange(); });
+  const noteBox = h('div', { style: { display: noteOpen ? '' : 'none' } }, noteIn);
+  const noteBtn = h('button', {
+    class: 'ib' + (v.n ? ' on' : ''), title: 'Nota', onclick: () => {
+      noteOpen = !noteOpen; noteBox.style.display = noteOpen ? '' : 'none';
+      if (noteOpen) setTimeout(() => noteIn.focus(), 50);
+    },
+  }, icon('note', 'sm'));
+
+  let ref = it.ref || '';
+  if (!ref && it.type === 'number') ref = rangeText(it);
+  let prevEl = null;
+  if (prev) {
+    const pv = prev.values[it.id];
+    if (pv && (String(pv.a || '').trim() || String(pv.p || '').trim())) {
+      prevEl = h('div', { class: 'prev' }, 'Prec. ' + fmtDate(repDate(prev)) + ': ',
+        h('b', null, displayVal(it, pv.a) || '—'), it.single ? null : [' → ', h('b', null, displayVal(it, pv.p) || '—')]);
+    }
+  }
+  wrap.appendChild(h('div', { class: 'item-top' },
+    it.num ? h('span', { class: 'num' }, it.num) : null,
+    h('div', { class: 'item-lbl' }, it.label, ref ? h('div', { class: 'item-ref' }, ref) : null, prevEl),
+    noteBtn));
+
+  const evaluate = () => {
+    const aBad = isAlert(it, v.a), pBad = !it.single && isAlert(it, v.p);
+    wrap.classList.toggle('alert', aBad || pBad);
+    if (it.type === 'number' && (aBad || pBad)) {
+      warn.style.display = '';
+      warn.innerHTML = '';
+      add(warn, [icon('alert', 'sm'), 'Fuori riferimento' + (rangeText(it) ? ' (' + rangeText(it) + ')' : '')]);
+    } else warn.style.display = 'none';
+  };
+
+  if (it.type === 'number' || it.type === 'text') {
+    let lastFocus = 'a';
+    const mk = key => {
+      const inp = h(it.type === 'text' ? 'textarea' : 'input', {
+        class: 'in' + (it.type === 'text' ? ' tv' : ''), rows: it.type === 'text' ? 1 : null, value: v[key] || '', autocomplete: 'off', enterkeyhint: 'next',
+        inputmode: it.type === 'number' ? 'decimal' : null,
+        placeholder: it.type === 'number' && it.unit ? it.unit : '',
+      });
+      const paint = () => {
+        const bad = isAlert(it, v[key]);
+        inp.classList.toggle('bad', bad);
+        inp.classList.toggle('ok', it.type === 'number' && !bad && !isNaN(parseNum(v[key])) && (hasNum(it.min) || hasNum(it.max)));
+      };
+      inp.addEventListener('input', () => { v[key] = inp.value; paint(); evaluate(); onChange(); });
+      inp.addEventListener('focus', () => { lastFocus = key; });
+      paint();
+      if (it.type !== 'number') { autosize(inp, 46); return { inp, el: inp }; }
+      const pm = h('button', {
+        class: 'cp', style: { position: 'absolute', right: '2px', top: '0', width: '32px', fontSize: '17px', fontWeight: '700' }, title: 'Cambia segno',
+        onclick: () => {
+          const s = inp.value.trim();
+          inp.value = s.startsWith('-') ? s.slice(1) : '-' + s;
+          inp.dispatchEvent(new Event('input'));
+          inp.focus();
+        },
+      }, '±');
+      inp.style.paddingRight = '34px';
+      return { inp, el: h('div', { style: { position: 'relative' } }, inp, pm) };
+    };
+    const A = mk('a');
+    if (it.single) {
+      wrap.appendChild(h('div', { class: 'vals single' }, h('label', null, h('span', null, 'Valore'), A.el)));
+    } else {
+      const P = mk('p');
+      const cp = h('button', {
+        class: 'cp', title: 'Copia arrivo in partenza',
+        onclick: () => { P.inp.value = A.inp.value; P.inp.dispatchEvent(new Event('input')); toast('Copiato in partenza'); },
+      }, icon('copy'));
+      wrap.appendChild(h('div', { class: 'vals' },
+        h('label', null, h('span', null, 'Arrivo'), A.el), cp, h('label', null, h('span', null, 'Partenza'), P.el)));
+    }
+    if (it.type === 'text' && (it.options || []).length) {
+      wrap.appendChild(h('div', { class: 'chips', style: { marginTop: '8px' } }, it.options.map(o => h('button', {
+        class: 'chip sug', onclick: () => {
+          const target = it.single ? 'a' : lastFocus;
+          const el = wrap.querySelectorAll('.vals .in')[target === 'p' ? 1 : 0];
+          el.value = o; el.dispatchEvent(new Event('input'));
+          if (target === 'a' && !it.single) lastFocus = 'p';
+        },
+      }, o))));
+    }
+  } else {
+    // scelta / sì-no
+    const opts = it.type === 'yesno' ? (it.options && it.options.length ? it.options : YN) : (it.options || []);
+    const rows = {};
+    const mkRow = (key, label) => {
+      const chips = h('div', { class: 'chips' });
+      const paint = () => {
+        chips.innerHTML = '';
+        for (const o of opts) {
+          const on = norm(v[key]) === norm(o);
+          const bad = on && isAlert(it, o);
+          chips.appendChild(h('button', {
+            class: 'chip' + (on ? ' on' : '') + (bad ? ' bad' : ''),
+            onclick: () => { v[key] = on ? '' : o; paint(); evaluate(); onChange(); },
+          }, on ? icon('check', 'sm') : null, o));
+        }
+        if (v[key] && !opts.some(o => norm(o) === norm(v[key]))) {
+          chips.appendChild(h('button', { class: 'chip on', onclick: () => { v[key] = ''; paint(); evaluate(); onChange(); } }, v[key]));
+        }
+      };
+      paint();
+      rows[key] = paint;
+      return h('div', { class: 'chiprow' }, h('span', null, label), chips);
+    };
+    if (it.single) wrap.appendChild(mkRow('a', 'Valore'));
+    else {
+      wrap.appendChild(mkRow('a', 'Arrivo'));
+      wrap.appendChild(mkRow('p', 'Partenza'));
+      wrap.appendChild(h('div', { class: 'chiprow' }, h('span'), h('button', {
+        class: 'chip sug cpx', onclick: () => { v.p = v.a; rows.p(); evaluate(); onChange(); },
+      }, icon('copy', 'sm'), 'Uguale all\'arrivo')));
+    }
+  }
+  wrap.append(warn, noteBox, itemPhotoStrip(rep, it, onChange));
+  evaluate();
+  return wrap;
+}
+
+/* --- foto del report --- */
+function phaseLabel(ph) { return ph === 'prima' ? 'Prima' : ph === 'dopo' ? 'Dopo' : ''; }
+function photoAutoName(rep, p) {
+  if (!p.itemId) return 'Generale';
+  const it = findItem(rep, p.itemId);
+  const base = it ? (it.num ? it.num + ' - ' : '') + it.label : 'Controllo';
+  return base + (p.phase ? ' - ' + p.phase.toUpperCase() : '');
+}
+function photoCaption(rep, p) {
+  if (p.caption) return p.caption;
+  if (!p.itemId) return 'Foto generale';
+  const it = findItem(rep, p.itemId);
+  return (it ? (it.num ? it.num + '. ' : '') + it.label : 'Controllo') + (p.phase ? ' – ' + phaseLabel(p.phase) : '');
+}
+async function storePhotos(rep, list, itemId, phase) {
+  for (const it of list) {
+    const id = 'p' + uid();
+    await DB.put('photos', { id, reportId: rep.id, blob: it.blob, w: it.w, h: it.h, createdAt: Date.now() });
+    rep.photos.push({ id, itemId: itemId || null, phase: phase || '', caption: '', include: true });
+  }
+}
+function photoSheet(rep, p, url, onChange, onDone) {
+  sheet(s => {
+    const cap = h('input', { class: 'in', id: 'ph-cap', value: p.caption || '', placeholder: photoCaption(rep, Object.assign({}, p, { caption: '' })) });
+    cap.addEventListener('input', () => { p.caption = cap.value; onChange(); });
+    const general = rep.photos.filter(x => !x.itemId);
+    const gi = general.indexOf(p);
+    const move = d => {
+      const j = gi + d;
+      if (j < 0 || j >= general.length) return;
+      const a = rep.photos.indexOf(p), b = rep.photos.indexOf(general[j]);
+      rep.photos[a] = general[j]; rep.photos[b] = p;
+      onChange(); s.close(); onDone();
+    };
+    return [
+      h('h2', null, photoCaption(rep, p)),
+      h('div', { class: 'sub' }, 'Nome file: ' + photoAutoName(rep, p) + '.jpg'),
+      h('img', { class: 'photo-big', src: url, style: { marginTop: '8px' } }),
+      h('label', { class: 'chk' }, h('input', {
+        type: 'checkbox', checked: p.include !== false, onchange: e => { p.include = e.target.checked; onChange(); },
+      }), h('span', null, 'Allega al report PDF / JPEG')),
+      h('div', { class: 'small muted', style: { marginTop: '4px' } }, 'La foto viene comunque conservata con il report e caricata nella cartella dell\'impianto.'),
+      field('Didascalia nel PDF (facoltativa)', cap),
+      !p.itemId && general.length > 1 ? h('div', { class: 'btns' },
+        h('button', { class: 'btn', disabled: gi === 0, onclick: () => move(-1) }, icon('left'), 'Prima'),
+        h('button', { class: 'btn', disabled: gi === general.length - 1, onclick: () => move(1) }, 'Dopo', icon('right'))) : null,
+      h('div', { class: 'btns' },
+        h('button', {
+          class: 'btn red', onclick: async () => {
+            const ok = await ask('Eliminare la foto?', null, [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+            if (!ok) return;
+            rep.photos.splice(rep.photos.indexOf(p), 1); await DB.del('photos', p.id); onChange(); s.close(); onDone();
+          },
+        }, icon('trash'), 'Elimina'),
+        h('button', { class: 'btn pri', onclick: () => { s.close(); onDone(); } }, 'Fatto')),
+    ];
+  });
+}
+function itemPhotoStrip(rep, it, onChange) {
+  const box = h('div', { class: 'iph' });
+  const paint = async () => {
+    const mine = rep.photos.filter(p => p.itemId === it.id);
+    const btn = (phase, label) => {
+      const n = mine.filter(p => p.phase === phase).length;
+      return h('button', { class: 'chip phb', onclick: () => add(phase) }, icon('camera', 'sm'), label, n ? h('span', { class: 'phn' }, n) : null);
+    };
+    const row = h('div', { class: 'iph-row' }, it.single ? btn('', 'Foto') : [btn('prima', 'Foto prima'), btn('dopo', 'Foto dopo')]);
+    const thumbs = h('div', { class: 'iph-thumbs' });
+    for (const p of mine) {
+      const rec = await DB.get('photos', p.id);
+      if (!rec) continue;
+      const u = URL.createObjectURL(rec.blob);
+      objectUrls.push(u);
+      thumbs.appendChild(h('div', { class: 'ph sm' + (p.include === false ? ' off' : ''), onclick: () => photoSheet(rep, p, u, onChange, paint) },
+        h('img', { src: u, alt: photoCaption(rep, p) }),
+        p.phase ? h('span', { class: 'n' }, phaseLabel(p.phase)) : null,
+        p.include === false ? h('span', { class: 'ex' }, 'non nel PDF') : null));
+    }
+    box.innerHTML = '';
+    box.append(row);
+    if (mine.length) box.append(thumbs);
+  };
+  async function add(phase) {
+    let list;
+    try { list = await Native.pickImages('camera', false); } catch (e) { toast('Foto non disponibile: ' + e.message); return; }
+    if (!list || !list.length) return;
+    await storePhotos(rep, list, it.id, phase);
+    onChange(); flushSaves();
+    await paint();
+    toast('Foto ' + (phaseLabel(phase) || '').toLowerCase() + ' salvata');
+  }
+  paint();
+  return box;
+}
+function photosCard(rep, onChange) {
+  const grid = h('div', { class: 'photos' });
+  const cnt = h('span', { class: 'count' });
+  const paint = async () => {
+    const ordered = orderedPhotos(rep);
+    const urls = [];
+    for (const p of ordered) {
+      const rec = await DB.get('photos', p.id);
+      if (!rec) continue;
+      const u = URL.createObjectURL(rec.blob);
+      objectUrls.push(u);
+      urls.push([p, u]);
+    }
+    grid.innerHTML = '';
+    const inc = rep.photos.filter(p => p.include !== false).length;
+    cnt.textContent = rep.photos.length ? rep.photos.length + ' foto · ' + inc + ' nel PDF' : '';
+    for (const [p, u] of urls) {
+      const it = p.itemId ? findItem(rep, p.itemId) : null;
+      const tag = it ? (it.num ? it.num : '•') + (p.phase ? ' ' + phaseLabel(p.phase) : '') : 'Gen.';
+      grid.appendChild(h('div', { class: 'ph' + (p.include === false ? ' off' : ''), onclick: () => photoSheet(rep, p, u, onChange, paint) },
+        h('img', { src: u, loading: 'lazy', alt: photoCaption(rep, p) }), h('span', { class: 'n' }, tag),
+        h('span', { class: 'cap' }, p.include === false ? 'Non nel PDF' : photoCaption(rep, p))));
+    }
+  };
+  const addPhotos = async source => {
+    let list;
+    try { list = await Native.pickImages(source, source !== 'camera'); } catch (e) { toast('Foto non disponibile: ' + e.message); return; }
+    if (!list || !list.length) return;
+    await storePhotos(rep, list, null, '');
+    onChange(); flushSaves();
+    await paint();
+    toast(list.length === 1 ? 'Foto aggiunta' : list.length + ' foto aggiunte');
+  };
+  paint();
+  return h('div', { class: 'card' },
+    h('div', { class: 'card-h' }, icon('camera'), h('span', { class: 'grow' }, 'Tutte le foto'), cnt),
+    h('div', { class: 'card-b', style: { paddingTop: '12px' } },
+      h('div', { class: 'small muted', style: { marginBottom: '10px' } }, 'Le foto dei singoli controlli si scattano dai pulsanti «Foto prima / Foto dopo» di ogni voce. Qui puoi aggiungere foto generali e scegliere quali allegare al report.'),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn pri grow', onclick: () => addPhotos('camera') }, icon('camera'), 'Foto generale'),
+        h('button', { class: 'btn grow', onclick: () => addPhotos('gallery') }, icon('image'), 'Dalla galleria')),
+      grid));
+}
+function orderedPhotos(rep) {
+  const out = [];
+  const used = new Set();
+  for (const s of rep.tpl.sections) for (const it of s.items) {
+    for (const ph of ['prima', 'dopo', '']) {
+      for (const p of rep.photos) if (p.itemId === it.id && (p.phase || '') === ph && !used.has(p)) { out.push(p); used.add(p); }
+    }
+  }
+  for (const p of rep.photos) if (!used.has(p)) { out.push(p); used.add(p); }
+  return out;
+}
+async function loadPhotos(rep, onlyIncluded) {
+  const out = [];
+  const names = {};
+  for (const p of orderedPhotos(rep)) {
+    const rec = await DB.get('photos', p.id);
+    if (!rec) continue;
+    let base = spName(photoAutoName(rep, p));
+    names[base] = (names[base] || 0) + 1;
+    const fileName = (names[base] > 1 ? base + ' ' + names[base] : base) + '.jpg';
+    if (onlyIncluded && p.include === false) continue;
+    out.push({ id: p.id, blob: rec.blob, w: rec.w, h: rec.h, caption: photoCaption(rep, p), itemId: p.itemId, include: p.include !== false, fileName });
+  }
+  return out;
+}
+
+/* ================================================================ ESPORTAZIONE */
+function exportSheet(rep) {
+  const o = { fmt: S.settings.lastFmt || 'zip', photos: true, jpg: !!S.settings.zipJpg, summary: S.settings.summary !== false };
+  if (!['zip', 'pdf', 'jpg'].includes(o.fmt)) o.fmt = 'zip';
+  sheet(s => {
+    const body = h('div');
+    const paint = () => {
+      body.innerHTML = '';
+      const nPh = (rep.photos || []).length;
+      const nInc = (rep.photos || []).filter(p => p.include !== false).length;
+      const st = repStats(rep);
+      const fmtChips = h('div', { class: 'chips', style: { marginTop: '6px' } });
+      for (const [k, l] of [['zip', 'Pacchetto SharePoint'], ['pdf', 'Solo PDF'], ['jpg', 'Solo JPEG']]) {
+        fmtChips.appendChild(h('button', { class: 'chip' + (o.fmt === k ? ' on' : ''), onclick: () => { o.fmt = k; paint(); } }, l));
+      }
+      const desc = {
+        zip: 'Un file .zip con PDF, foto e dati, già ordinati in ' + reportFolder(rep) + '. Caricalo in «' + (S.settings.spInbox || '_CARICA QUI') + '»: Power Automate lo mette nella cartella giusta.',
+        pdf: 'Solo il PDF, da inviare subito al cliente o ai colleghi.',
+        jpg: 'Una immagine JPEG per ogni pagina del report.',
+      }[o.fmt];
+      add(body, [
+        h('h2', null, 'Genera report'),
+        h('div', { class: 'sub' }, fileBase(rep, S.settings)),
+        st.done < st.total ? h('div', { class: 'info-box', style: { marginTop: '10px' } }, icon('info', 'sm'),
+          'Compilate ' + st.done + ' voci su ' + st.total + '. Le voci vuote resteranno in bianco nel report.') : null,
+        group('Cosa vuoi creare', fmtChips),
+        h('div', { class: 'small muted', style: { marginTop: '6px' } }, desc),
+        o.fmt === 'zip' ? h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: o.jpg, onchange: e => { o.jpg = e.target.checked; } }), h('span', null, 'Aggiungi anche le pagine in JPEG')) : null,
+        nPh ? h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: o.photos, onchange: e => { o.photos = e.target.checked; } }),
+          h('span', null, 'Allega le foto scelte al report (' + nInc + ' di ' + nPh + ')')) : null,
+        h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: o.summary, onchange: e => { o.summary = e.target.checked; } }), h('span', null, 'Riepilogo anomalie nella prima pagina')),
+        h('div', { class: 'btns' },
+          h('button', { class: 'btn', onclick: () => s.close() }, 'Annulla'),
+          h('button', { class: 'btn acc', id: 'ex-go', onclick: () => run() }, icon(o.fmt === 'zip' ? 'upload' : 'pdf'), 'Genera')),
+      ]);
+    };
+    async function run() {
+      S.settings.lastFmt = o.fmt; DB.setSetting('lastFmt', o.fmt);
+      S.settings.summary = o.summary; DB.setSetting('summary', o.summary);
+      S.settings.zipJpg = o.jpg; DB.setSetting('zipJpg', o.jpg);
+      flushSaves();
+      const b = busy('Creo il PDF…');
+      let saved = [];
+      try {
+        await nextFrame();
+        const all = await loadPhotos(rep, false);
+        const inPdf = o.photos ? all.filter(p => p.include) : [];
+        const res = await buildReportPdf(rep, S.settings, {
+          photos: inPdf, logo: S.logo, includePhotos: o.photos, summary: o.summary, photosPerRow: +S.settings.photosPerRow,
+        });
+        window.__lastPdf = res.bytes;
+        const base = fileBase(rep, S.settings);
+        let jpgs = [];
+        if (o.fmt === 'jpg' || (o.fmt === 'zip' && o.jpg)) {
+          b.set('Creo le immagini JPEG…');
+          jpgs = await pdfPagesToJpeg(res.doc, +S.settings.jpegDpi || 150);
+        }
+        const jpgName = i => jpgs.length > 1 ? base + ' - pag ' + (i + 1) + '.jpg' : base + '.jpg';
+        if (o.fmt === 'zip') {
+          b.set('Preparo il pacchetto…');
+          const folder = reportFolder(rep);
+          const files = [{ path: folder + '/' + base + '.pdf', data: res.bytes }];
+          jpgs.forEach((j, i) => files.push({ path: folder + '/' + jpgName(i), data: j }));
+          for (const p of all) files.push({ path: folder + '/Foto/' + p.fileName, data: p.blob });
+          const data = Object.assign({}, rep, { photos: rep.photos.map(p => Object.assign({}, p, { file: (all.find(x => x.id === p.id) || {}).fileName })) });
+          files.push({ path: folder + '/' + base + ' - dati app.json', data: JSON.stringify({ app: 'ReportImpianti', kind: 'report', version: 2, folder, report: data }, null, 1) });
+          const zip = await Zip.build(files);
+          window.__lastZip = zip;
+          const zname = spName('PACCHETTO ' + plantFolder(repPlant(rep)) + ' ' + fmtDate(repDate(rep), '-')) + '.zip';
+          b.done();
+          const rz = await Native.saveFile(zip, zname, 'application/zip');
+          saved.push({ name: zname, kind: 'zip', mime: 'application/zip', uri: rz.uri, blob: zip, folder, count: files.length });
+        } else if (o.fmt === 'pdf') {
+          b.done();
+          const rp = await Native.saveFile(new Blob([res.bytes], { type: 'application/pdf' }), base + '.pdf', 'application/pdf');
+          saved.push({ name: base + '.pdf', kind: 'pdf', mime: 'application/pdf', uri: rp.uri, blob: new Blob([res.bytes], { type: 'application/pdf' }) });
+        } else {
+          b.done();
+          for (let i = 0; i < jpgs.length; i++) {
+            const rj = await Native.saveFile(jpgs[i], jpgName(i), 'image/jpeg');
+            saved.push({ name: jpgName(i), kind: 'jpg', mime: 'image/jpeg', uri: rj.uri, blob: jpgs[i] });
+          }
+        }
+        rep.lastExport = Date.now();
+        if (o.fmt === 'zip') rep.lastPackage = Date.now();
+        scheduleSave('reports', rep, 0);
+      } catch (e) {
+        b.done();
+        toast(e.message === 'Salvataggio annullato' ? e.message : 'Errore: ' + e.message);
+        if (!saved.length) return;
+      }
+      showDone(saved);
+    }
+    function showDone(saved) {
+      body.innerHTML = '';
+      const z = saved.find(x => x.kind === 'zip');
+      const inbox = S.settings.spInbox || '_CARICA QUI';
+      const subject = (S.settings.spSubject || 'REPORT TORRI') + ' - ' + (repPlant(rep) || 'Impianto') + ' ' + fmtDate(repDate(rep));
+      const app = Native.isApp;
+      const withUri = saved.filter(f => f.uri);
+      const allMime = withUri.length && withUri.every(f => f.mime === withUri[0].mime) ? withUri[0].mime : '*/*';
+      add(body, [
+        h('h2', null, z ? 'Pacchetto pronto' : 'Report pronto'),
+        h('div', { class: 'sub' }, app ? 'Salvato in Download › Report Impianti' : 'Salvato tra i download del telefono'),
+        h('div', { class: 'files' }, saved.map(f => h('div', { class: 'file-row' },
+          icon(f.kind === 'jpg' ? 'jpg' : f.kind === 'zip' ? 'upload' : 'pdf'),
+          h('div', { class: 'grow' }, f.name),
+          app && f.uri && f.kind !== 'zip' ? h('button', { class: 'ib', title: 'Apri', onclick: () => Native.open(f.uri, f.mime) }, icon('open')) : null,
+          app && f.uri ? h('button', { class: 'ib', title: 'Condividi', onclick: () => Native.share([f.uri], f.mime, f.kind === 'zip' ? subject : f.name) }, icon('share')) : null,
+          !app && webShareable(f) ? h('button', { class: 'ib', title: 'Condividi', onclick: () => webShare([f], f.name) }, icon('share')) : null))),
+        z ? h('ol', { class: 'steps' },
+          app ? h('li', null, 'Tocca ', h('b', null, 'Invia per email'), ': si apre Outlook con oggetto ', h('b', null, S.settings.spSubject || 'REPORT TORRI'), (S.settings.spEmail ? ' e destinatario' : ''), ' già compilati, poi tocca Invia.') : null,
+          h('li', null, app ? 'Oppure apri l\'app SharePoint › ' : 'Apri la cartella ', h('b', null, 'TORRI DI DESOLFORAZIONE › ' + inbox), app ? ', tocca + › Carica e scegli il file da Download › Report Impianti.' : ' su SharePoint, tocca + › Carica e scegli il file dai Download.'),
+          h('li', null, 'Entro qualche minuto Power Automate lo apre in ', h('b', null, z.folder), ' e crea le cartelle mancanti.')) : null,
+        h('div', { class: 'btns' },
+          app && z && z.uri ? h('button', { class: 'btn acc', onclick: () => Native.share([z.uri], 'application/zip', subject, S.settings.spEmail || '') }, icon('share'), 'Invia per email') : null,
+          !app && !z && saved.filter(webShareable).length > 1 ? h('button', { class: 'btn pri', onclick: () => webShare(saved.filter(webShareable), fileBase(rep, S.settings)) }, icon('share'), 'Condividi tutti') : null,
+          app && !z && withUri.length > 1 ? h('button', { class: 'btn pri', onclick: () => Native.share(withUri.map(f => f.uri), allMime, fileBase(rep, S.settings)) }, icon('share'), 'Condividi tutti') : null,
+          z && S.settings.spLink ? h('a', { class: 'btn', href: S.settings.spLink, target: '_blank', rel: 'noopener' }, icon('open'), 'SharePoint') : null,
+          h('button', { class: 'btn' + (app ? '' : ' pri'), onclick: () => s.close() }, 'Fatto')),
+      ]);
+    }
+    paint();
+    return body;
+  });
+}
+
+function fileOf(f) { return new File([f.blob], f.name, { type: f.mime }); }
+function webShareable(f) {
+  try { return !!(f.blob && f.kind !== 'zip' && navigator.canShare && navigator.canShare({ files: [fileOf(f)] })); } catch (e) { return false; }
+}
+async function webShare(list, title) {
+  try { await navigator.share({ files: list.map(fileOf), title }); } catch (e) { if (e && e.name !== 'AbortError') toast('Condivisione non riuscita'); }
+}
+
+/* ================================================================ EDITOR STRUTTURA */
+function viewStructure(kind, id) {
+  let rep = null, obj;
+  if (kind === 'tpl') obj = S.templates.find(t => t.id === id);
+  else { rep = S.reports.find(r => r.id === id); obj = rep && rep.tpl; }
+  if (!obj) { setTimeout(() => go(kind === 'tpl' ? '/t' : '/'), 0); return null; }
+  const save = () => {
+    if (kind === 'tpl') { obj.updatedAt = Date.now(); scheduleSave('templates', obj); }
+    else { rep.updatedAt = Date.now(); scheduleSave('reports', rep); }
+  };
+  const body = h('div', { class: 'page' });
+  const back = kind === 'tpl' ? '/t' : '/r/' + encodeURIComponent(id);
+
+  function paint() {
+    const y = window.scrollY;
+    body.innerHTML = '';
+    body.appendChild(h('div', { class: 'info-box' }, icon('info', 'sm'), h('div', null, kind === 'tpl'
+      ? 'Le modifiche valgono per i nuovi report creati con questo modello. I report già compilati non cambiano.'
+      : 'Stai modificando solo questo report. Puoi salvare la struttura come modello in fondo alla pagina.')));
+
+    // generale
+    const inp = (key, label, multiline) => {
+      const el = multiline ? autosize(h('textarea', { class: 'in', value: obj[key] || '' })) : h('input', { class: 'in', value: obj[key] || '' });
+      el.addEventListener('input', () => { obj[key] = el.value; save(); });
+      return field(label, el);
+    };
+    body.appendChild(h('div', { class: 'card' },
+      h('div', { class: 'card-h' }, icon('edit'), h('span', { class: 'grow' }, 'Generale')),
+      h('div', { class: 'card-b' },
+        inp('name', 'Nome del modello (usato anche nel nome del file)'),
+        inp('title', 'Titolo del report'),
+        inp('subtitle', 'Istruzioni / sottotitolo', true),
+        h('div', { class: 'grid2' }, inp('colA', 'Colonna 1'), inp('colB', 'Colonna 2')),
+        inp('notesTitle', 'Titolo sezione note'))));
+
+    // intestazione
+    const hf = obj.headerFields;
+    body.appendChild(h('div', { class: 'card' },
+      h('div', { class: 'card-h' }, icon('info'), h('span', { class: 'grow' }, 'Dati intervento'), h('span', { class: 'count' }, hf.length + ' campi')),
+      h('div', { class: 'card-b' },
+        hf.map((f, i) => h('div', { class: 'ed-row' },
+          h('div', { class: 'grow', onclick: () => editHeaderField(obj, f, save, paint) },
+            h('div', { class: 't' }, f.label),
+            h('div', { class: 's' }, HTYPE_LABEL[f.type] || f.type, f.role ? ' · ' + ROLE_LABEL[f.role] : '')),
+          moveBtns(hf, i, () => { save(); paint(); }))),
+        h('button', {
+          class: 'btn ghost block', style: { marginTop: '6px' }, onclick: () => {
+            const f = { id: 'h' + uid(), label: 'Nuovo campo', type: 'text', role: '', options: [], def: '' };
+            editHeaderField(obj, f, save, paint, true);
+          },
+        }, icon('plus'), 'Aggiungi campo'))));
+
+    // categorie
+    obj.sections.forEach((s, si) => {
+      body.appendChild(h('div', { class: 'card' },
+        h('div', { class: 'card-h', style: { paddingRight: '4px' } },
+          h('span', { class: 'grow' }, s.title), h('span', { class: 'count' }, s.items.length + ' voci'),
+          h('button', {
+            class: 'ib', style: { color: 'var(--ink-3)' }, onclick: () => menu(s.title, [
+              { icon: 'edit', label: 'Rinomina categoria', do: async () => { const t = await prompt2('Rinomina categoria', 'Nome', s.title); if (t && t.trim()) { s.title = t.trim(); save(); paint(); } } },
+              si > 0 ? { icon: 'up', label: 'Sposta su', do: () => { obj.sections.splice(si - 1, 0, obj.sections.splice(si, 1)[0]); save(); paint(); } } : null,
+              si < obj.sections.length - 1 ? { icon: 'down', label: 'Sposta giù', do: () => { obj.sections.splice(si + 1, 0, obj.sections.splice(si, 1)[0]); save(); paint(); } } : null,
+              {
+                icon: 'trash', label: 'Elimina categoria', red: true, do: async () => {
+                  const ok = await ask('Eliminare «' + s.title + '»?', 'Verranno eliminate anche le ' + s.items.length + ' voci contenute.', [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+                  if (ok) { obj.sections.splice(si, 1); save(); paint(); }
+                },
+              },
+            ]),
+          }, icon('more'))),
+        h('div', { class: 'card-b' },
+          s.items.map((it, ii) => h('div', { class: 'ed-row' },
+            h('div', { class: 'grow', onclick: () => editItem(obj, s, it, save, paint) },
+              h('div', { class: 't' }, it.num ? h('span', { class: 'num', style: { marginRight: '6px' } }, it.num) : null, it.label),
+              h('div', { class: 's' }, itemSummary(it))),
+            moveBtns(s.items, ii, () => { save(); paint(); }))),
+          h('button', {
+            class: 'btn ghost block', style: { marginTop: '6px' }, onclick: () => {
+              const it = mkItem(nextNum(obj), '', '', 'number');
+              editItem(obj, s, it, save, paint, true);
+            },
+          }, icon('plus'), 'Aggiungi voce'))));
+    });
+    body.appendChild(h('button', {
+      class: 'btn block', onclick: async () => {
+        const t = await prompt2('Nuova categoria', 'Nome della categoria', '', { placeholder: 'Es. Analisi biogas', ok: 'Aggiungi' });
+        if (t && t.trim()) { obj.sections.push({ id: 's' + uid(), title: t.trim(), items: [] }); save(); paint(); }
+      },
+    }, icon('plus'), 'Aggiungi categoria'));
+
+    if (kind === 'rep') {
+      const base = S.templates.find(t => t.id === rep.templateId);
+      body.appendChild(h('h3', { class: 'sec' }, 'Salva come modello'));
+      body.appendChild(h('div', { class: 'btns' },
+        h('button', { class: 'btn', onclick: () => saveAsTemplate(rep, null) }, icon('dup'), 'Nuovo modello'),
+        base ? h('button', { class: 'btn', onclick: () => saveAsTemplate(rep, base) }, icon('refresh'), 'Sostituisci «' + base.name + '»') : null));
+    }
+    window.scrollTo(0, y);
+  }
+  paint();
+  return [bar(kind === 'tpl' ? 'Modifica modello' : 'Struttura del report', obj.name, { back, saved: true }), body];
+}
+const ROLE_LABEL = { plant: 'Impianto', date: 'Data intervento', tech: 'Tecnico', keep: 'Riportato al prossimo intervento', '': '' };
+function moveBtns(arr, i, done) {
+  return [
+    h('button', { class: 'ib', disabled: i === 0, onclick: () => { arr.splice(i - 1, 0, arr.splice(i, 1)[0]); done(); } }, icon('up', 'sm')),
+    h('button', { class: 'ib', disabled: i === arr.length - 1, onclick: () => { arr.splice(i + 1, 0, arr.splice(i, 1)[0]); done(); } }, icon('down', 'sm')),
+  ];
+}
+function itemSummary(it) {
+  const p = [TYPE_LABEL[it.type] || it.type];
+  if (it.type === 'number') { const r = rangeText(it); if (r) p.push(r); else if (it.unit) p.push(it.unit); }
+  if ((it.type === 'choice' || it.type === 'text') && it.options.length) p.push(it.options.slice(0, 3).join(' / ') + (it.options.length > 3 ? '…' : ''));
+  if ((it.alert || []).length) p.push('anomalia se ' + it.alert.join(' o '));
+  if (it.single) p.push('valore unico');
+  return p.join(' · ');
+}
+function nextNum(obj) {
+  let m = 0;
+  for (const s of obj.sections) for (const it of s.items) { const n = parseInt(it.num, 10); if (!isNaN(n) && n > m) m = n; }
+  return m + 1;
+}
+async function saveAsTemplate(rep, base) {
+  if (base) {
+    const ok = await ask('Sostituire il modello?', 'Il modello «' + base.name + '» prenderà la struttura di questo report. I report già compilati non cambiano.', [{ label: 'Annulla', value: false }, { label: 'Sostituisci', value: true, cls: 'pri' }]);
+    if (!ok) return;
+    const t = Object.assign(clone(rep.tpl), { id: base.id, createdAt: base.createdAt, updatedAt: Date.now() });
+    Object.assign(base, t);
+    await DB.put('templates', base);
+    toast('Modello aggiornato');
+  } else {
+    const name = await prompt2('Nuovo modello', 'Nome del modello', rep.tpl.name + ' (copia)');
+    if (!name) return;
+    const t = Object.assign(clone(rep.tpl), { id: 'tpl_' + uid(), name: name.trim(), createdAt: Date.now(), updatedAt: Date.now() });
+    S.templates.push(t);
+    await DB.put('templates', t);
+    toast('Modello creato');
+  }
+}
+
+function editItem(obj, sec, it, save, repaint, isNew) {
+  const d = clone(it);
+  sheet(s => {
+    const dyn = h('div');
+    const num = h('input', { class: 'in', value: d.num });
+    const lab = autosize(h('textarea', { class: 'in', value: d.label, placeholder: 'Es. Pressione rampa lavaggio 1 (SP1)', style: { minHeight: '46px' } }));
+    const ref = h('input', { class: 'in', value: d.ref, placeholder: 'Es. 2,1 - 3 bar' });
+    const type = h('select', { class: 'in' }, Object.keys(TYPE_LABEL).map(k => h('option', { value: k }, TYPE_LABEL[k])));
+    type.value = d.type;
+    num.oninput = () => { d.num = num.value; };
+    lab.oninput = () => { d.label = lab.value; };
+    ref.oninput = () => { d.ref = ref.value; };
+    type.onchange = () => {
+      d.type = type.value;
+      if (d.type === 'yesno') { d.options = YN.slice(); d.alert = []; }
+      else if (d.type === 'choice' && (!d.options.length || d.options.join() === YN.join())) { d.options = []; d.alert = []; }
+      else if (d.type === 'number' || d.type === 'text') d.alert = [];
+      paintDyn();
+    };
+    function paintDyn() {
+      dyn.innerHTML = '';
+      if (d.type === 'number') {
+        const u = h('input', { class: 'in', value: d.unit || '', placeholder: 'bar, mbar, ppm…' });
+        const mn = h('input', { class: 'in', inputmode: 'decimal', value: hasNum(d.min) ? fmtNum(+d.min) : '' });
+        const mx = h('input', { class: 'in', inputmode: 'decimal', value: hasNum(d.max) ? fmtNum(+d.max) : '' });
+        u.oninput = () => { d.unit = u.value.trim(); };
+        mn.oninput = () => { const n = parseNum(mn.value); d.min = isNaN(n) ? null : n; };
+        mx.oninput = () => { const n = parseNum(mx.value); d.max = isNaN(n) ? null : n; };
+        add(dyn, [
+          field('Unità di misura', u),
+          h('div', { class: 'grid2' }, field('Minimo accettabile', mn), field('Massimo accettabile', mx)),
+          h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'I valori fuori da questo intervallo vengono evidenziati in rosso nell\'app e nel PDF. Lascia vuoto se non serve.'),
+        ]);
+      } else {
+        const ta = autosize(h('textarea', { class: 'in', value: (d.options || []).join('\n'), placeholder: 'Una opzione per riga' }));
+        const alertBox = h('div');
+        const paintAlert = () => {
+          alertBox.innerHTML = '';
+          if (d.type === 'text' || !d.options.length) return;
+          alertBox.appendChild(group('Evidenzia come anomalia quando il valore è',
+            h('div', { class: 'chips' }, d.options.map(o => {
+              const on = d.alert.includes(o);
+              return h('button', {
+                class: 'chip' + (on ? ' on bad' : ''),
+                onclick: () => { d.alert = on ? d.alert.filter(x => x !== o) : d.alert.concat([o]); paintAlert(); },
+              }, o);
+            }))));
+        };
+        ta.oninput = () => {
+          d.options = ta.value.split('\n').map(x => x.trim()).filter(Boolean);
+          d.alert = d.alert.filter(a => d.options.includes(a));
+          paintAlert();
+        };
+        add(dyn, [
+          field(d.type === 'text' ? 'Suggerimenti rapidi (facoltativi, uno per riga)' : 'Opzioni (una per riga)', ta),
+          alertBox,
+        ]);
+        paintAlert();
+      }
+      dyn.appendChild(h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: d.single, onchange: e => { d.single = e.target.checked; } }),
+        h('span', null, 'Valore unico (senza arrivo / partenza)')));
+    }
+    paintDyn();
+    if (isNew) setTimeout(() => lab.focus(), 300);
+    return [
+      h('h2', null, isNew ? 'Nuova voce' : 'Modifica voce'),
+      h('div', { class: 'sub' }, sec.title),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '78px 1fr', gap: '0 10px' } }, field('N.', num), field('Tipo di valore', type)),
+      field('Voce di controllo', lab),
+      field('Riferimento (testo mostrato nel report)', ref),
+      dyn,
+      h('div', { class: 'btns', style: { marginTop: '18px' } },
+        !isNew ? h('button', {
+          class: 'btn red', style: { flex: '0 0 auto' }, onclick: async () => {
+            const ok = await ask('Eliminare la voce?', it.label, [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+            if (!ok) return;
+            sec.items.splice(sec.items.indexOf(it), 1); save(); s.close(); repaint();
+          },
+        }, icon('trash')) : null,
+        h('button', { class: 'btn', onclick: () => s.close() }, 'Annulla'),
+        h('button', {
+          class: 'btn pri', onclick: () => {
+            if (!d.label.trim()) { toast('Scrivi il nome della voce'); lab.focus(); return; }
+            d.label = d.label.trim();
+            if (isNew) sec.items.push(d); else Object.assign(it, d);
+            save(); s.close(); repaint();
+          },
+        }, 'Salva')),
+    ];
+  });
+}
+
+function editHeaderField(obj, f, save, repaint, isNew) {
+  const d = clone(f);
+  sheet(s => {
+    const dyn = h('div');
+    const lab = h('input', { class: 'in', value: d.label });
+    lab.oninput = () => { d.label = lab.value; };
+    const type = h('select', { class: 'in' }, Object.keys(HTYPE_LABEL).map(k => h('option', { value: k }, HTYPE_LABEL[k])));
+    type.value = d.type;
+    const role = h('select', { class: 'in' },
+      h('option', { value: '' }, 'Nessuno'),
+      h('option', { value: 'plant' }, 'Impianto (nome file, storico, suggerimenti)'),
+      h('option', { value: 'date' }, 'Data intervento'),
+      h('option', { value: 'tech' }, 'Tecnico (precompilato dalle impostazioni)'),
+      h('option', { value: 'keep' }, 'Riporta il valore al prossimo intervento'));
+    role.value = d.role || '';
+    role.onchange = () => { d.role = role.value; };
+    type.onchange = () => { d.type = type.value; paintDyn(); };
+    function paintDyn() {
+      dyn.innerHTML = '';
+      if (d.type === 'choice') {
+        const ta = autosize(h('textarea', { class: 'in', value: (d.options || []).join('\n'), placeholder: 'Una per riga' }));
+        ta.oninput = () => { d.options = ta.value.split('\n').map(x => x.trim()).filter(Boolean); };
+        dyn.appendChild(field('Suggerimenti (uno per riga)', ta));
+      }
+      if (d.type === 'date') dyn.appendChild(h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: d.def === 'today', onchange: e => { d.def = e.target.checked ? 'today' : ''; } }), h('span', null, 'Precompila con la data di oggi')));
+      else if (d.type === 'time') dyn.appendChild(h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: d.def === 'now', onchange: e => { d.def = e.target.checked ? 'now' : ''; } }), h('span', null, 'Precompila con l\'ora attuale')));
+      else {
+        const dv = h('input', { class: 'in', value: d.def && d.def !== 'today' && d.def !== 'now' ? d.def : '' });
+        dv.oninput = () => { d.def = dv.value; };
+        dyn.appendChild(field('Valore predefinito (facoltativo)', dv));
+      }
+    }
+    paintDyn();
+    return [
+      h('h2', null, isNew ? 'Nuovo campo' : 'Modifica campo'),
+      field('Etichetta', lab),
+      field('Tipo', type),
+      field('Ruolo', role),
+      dyn,
+      h('div', { class: 'btns', style: { marginTop: '18px' } },
+        isNew ? null : h('button', {
+          class: 'btn red', style: { flex: '0 0 auto' }, onclick: async () => {
+            const ok = await ask('Eliminare il campo?', f.label, [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+            if (!ok) return;
+            obj.headerFields.splice(obj.headerFields.indexOf(f), 1); save(); s.close(); repaint();
+          },
+        }, icon('trash')),
+        h('button', { class: 'btn', onclick: () => s.close() }, 'Annulla'),
+        h('button', {
+          class: 'btn pri', onclick: () => {
+            d.label = d.label.trim() || 'Campo';
+            if (d.role && d.role !== 'keep') for (const o of obj.headerFields) if (o !== f && o.role === d.role) o.role = '';
+            Object.assign(f, d); if (isNew) obj.headerFields.push(f); save(); s.close(); repaint();
+          },
+        }, 'Salva')),
+    ];
+  });
+}
+
+/* ================================================================ MODELLI */
+function viewTemplates() {
+  const list = h('div', { class: 'card' }, S.templates.map(t => {
+    const nItems = t.sections.reduce((a, s) => a + s.items.length, 0);
+    const used = S.reports.filter(r => r.templateId === t.id).length;
+    return h('div', { class: 'li', onclick: () => go('/t/' + encodeURIComponent(t.id)) },
+      h('div', { class: 'avatar' }, icon('layers')),
+      h('div', { class: 'grow' }, h('div', { class: 'ttl2' }, t.name),
+        h('div', { class: 'sub' }, t.sections.length + ' categorie · ' + nItems + ' voci · ' + used + ' report')),
+      h('button', { class: 'ib', style: { color: 'var(--ink-3)' }, onclick: e => { e.stopPropagation(); tplMenu(t); } }, icon('more')));
+  }));
+  return [
+    bar('Modelli di checklist', 'Categorie e voci di controllo modificabili'),
+    h('div', { class: 'page with-nav' },
+      h('div', { class: 'info-box' }, icon('info', 'sm'), h('div', null, 'Tocca un modello per aggiungere, togliere o riordinare categorie e voci di controllo, impostare intervalli di riferimento e opzioni.')),
+      list,
+      h('div', { class: 'btns' },
+        h('button', { class: 'btn pri', onclick: newTemplateMenu }, icon('plus'), 'Nuovo modello'),
+        h('button', { class: 'btn', onclick: importFile }, icon('upload'), 'Importa'))),
+    bottomNav('tpl'),
+  ];
+}
+function newTemplateMenu() {
+  menu('Nuovo modello', [
+    { icon: 'plus', label: 'Modello vuoto', do: () => addTemplate(blankTemplate()) },
+    ...S.templates.map(t => ({ icon: 'dup', label: 'Copia di «' + t.name + '»', do: () => addTemplate(Object.assign(clone(t), { id: 'tpl_' + uid(), name: t.name + ' (copia)', createdAt: Date.now() })) })),
+  ]);
+}
+async function addTemplate(t) {
+  S.templates.push(t);
+  await DB.put('templates', t);
+  go('/t/' + encodeURIComponent(t.id));
+}
+function tplMenu(t) {
+  menu(t.name, [
+    { icon: 'edit', label: 'Modifica', do: () => go('/t/' + encodeURIComponent(t.id)) },
+    { icon: 'dup', label: 'Duplica', do: () => addTemplate(Object.assign(clone(t), { id: 'tpl_' + uid(), name: t.name + ' (copia)', createdAt: Date.now() })) },
+    { icon: 'download', label: 'Esporta (per condividerlo con un collega)', do: () => exportTemplate(t) },
+    {
+      icon: 'trash', label: 'Elimina modello', red: true, do: async () => {
+        if (S.templates.length === 1) { toast('Deve rimanere almeno un modello'); return; }
+        const ok = await ask('Eliminare «' + t.name + '»?', 'I report già creati con questo modello restano disponibili.', [{ label: 'Annulla', value: false }, { label: 'Elimina', value: true, cls: 'red' }]);
+        if (!ok) return;
+        await DB.del('templates', t.id);
+        S.templates = S.templates.filter(x => x.id !== t.id);
+        render();
+      },
+    },
+  ]);
+}
+async function exportTemplate(t) {
+  try {
+    const data = JSON.stringify({ app: 'ReportImpianti', kind: 'template', version: 1, template: t }, null, 1);
+    const r = await Native.saveFile(data, 'Modello - ' + safeFile(t.name) + '.json', 'application/json');
+    toast('Modello salvato: ' + r.name);
+  } catch (e) { toast(e.message); }
+}
+
+/* ================================================================ IMPIANTI */
+function viewPlants() {
+  const pl = plantsList();
+  return [
+    bar('Impianti', pl.length + (pl.length === 1 ? ' impianto in elenco' : ' impianti in elenco')),
+    h('div', { class: 'page with-nav' },
+      pl.length ? h('div', { class: 'card' }, pl.map(p => {
+        const last = p.reports[0];
+        const st = last ? repStats(last) : null;
+        const ini = p.name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        return h('div', { class: 'li', onclick: () => go('/p/' + encodeURIComponent(p.name)) },
+          h('div', { class: 'avatar' }, ini),
+          h('div', { class: 'grow' }, h('div', { class: 'ttl2' }, p.name),
+            h('div', { class: 'sub' }, last ? p.reports.length + (p.reports.length === 1 ? ' intervento' : ' interventi') + ' · ultimo ' + fmtDate(repDate(last)) : 'Nessun intervento'),
+            st && st.alerts ? h('div', { class: 'badges' }, h('span', { class: 'bdg red' }, icon('alert'), st.alerts + ' anomalie all\'ultimo controllo')) : null),
+          icon('right'));
+      })) : h('div', { class: 'empty' }, icon('factory'), h('b', null, 'Nessun impianto'), 'Aggiungi un impianto qui o creando un nuovo report.'),
+      h('button', { class: 'btn block', onclick: () => editPlant(null) }, icon('plus'), 'Aggiungi impianto')),
+    bottomNav('plants'),
+  ];
+}
+function editPlant(name) {
+  const existing = name ? plantByName(name) : null;
+  const d = { name: existing ? existing.name : (name || ''), folder: existing ? existing.folder : (name || '') };
+  sheet(s => {
+    const n = h('input', { class: 'in', id: 'pl-name', value: d.name, placeholder: 'Es. Impianto Nord' });
+    const f = h('input', { class: 'in', id: 'pl-folder', value: d.folder, placeholder: 'Uguale al nome' });
+    let folderTouched = !!(existing && existing.folder && existing.folder !== existing.name);
+    n.oninput = () => { if (!folderTouched) f.value = n.value; };
+    f.oninput = () => { folderTouched = true; };
+    const nRep = name ? S.reports.filter(r => norm(repPlant(r)) === norm(name)).length : 0;
+    return [
+      h('h2', null, existing ? 'Modifica impianto' : 'Nuovo impianto'),
+      field('Nome impianto', n),
+      field('Nome della cartella su SharePoint', f),
+      h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Deve corrispondere alla cartella dell\'impianto dentro TORRI DI DESOLFORAZIONE. Se non esiste ancora, verrà creata al primo caricamento.'),
+      h('div', { class: 'btns', style: { marginTop: '18px' } },
+        existing && !nRep ? h('button', {
+          class: 'btn red', style: { flex: '0 0 auto' }, onclick: async () => {
+            S.plants = S.plants.filter(p => p !== existing);
+            await DB.setSetting('plants', S.plants); s.close(); go('/p');
+          },
+        }, icon('trash')) : null,
+        h('button', { class: 'btn', onclick: () => s.close() }, 'Annulla'),
+        h('button', {
+          class: 'btn pri', onclick: async () => {
+            const nn = n.value.trim();
+            if (!nn) { toast('Scrivi il nome dell\'impianto'); return; }
+            const other = plantByName(nn);
+            if (other && other !== existing) { toast('Esiste già un impianto con questo nome'); return; }
+            const folder = spName(f.value.trim() || nn);
+            if (existing) {
+              const old = existing.name;
+              existing.name = nn; existing.folder = folder;
+              if (norm(old) !== norm(nn)) {
+                for (const r of S.reports) {
+                  if (norm(repPlant(r)) !== norm(old)) continue;
+                  const fld = hdrField(r.tpl, 'plant');
+                  if (fld) { r.header[fld.id] = nn; await DB.put('reports', r); }
+                }
+              }
+            } else if (name) {
+              S.plants.push({ id: 'pl' + uid(), name: nn, folder, createdAt: Date.now() });
+            } else {
+              S.plants.push({ id: 'pl' + uid(), name: nn, folder, createdAt: Date.now() });
+            }
+            await DB.setSetting('plants', S.plants);
+            s.close();
+            toast('Impianto salvato');
+            go('/p/' + encodeURIComponent(nn));
+          },
+        }, 'Salva')),
+    ];
+  });
+}
+function viewPlant(name) {
+  const p = plantsList().find(x => norm(x.name) === norm(name));
+  if (!p) { setTimeout(() => go('/p'), 0); return null; }
+  const items = new Map();
+  for (const r of p.reports) for (const s of r.tpl.sections) for (const it of s.items) {
+    if (it.type === 'number' && !items.has(it.id)) items.set(it.id, it);
+  }
+  const sel = h('select', { class: 'in', id: 'pl-item' }, Array.from(items.values()).map(it => h('option', { value: it.id }, (it.num ? it.num + '. ' : '') + it.label)));
+  const chartBox = h('div');
+  const paintChart = () => {
+    chartBox.innerHTML = '';
+    const it = items.get(sel.value);
+    if (!it) return;
+    const rows = p.reports.slice().reverse().map(r => ({ r, v: itemVal(r, it), it: findItem(r, it.id) || it }));
+    add(chartBox, [historyChart(rows, it), historyTable(rows, it)]);
+  };
+  sel.addEventListener('change', paintChart);
+  paintChart();
+  return [
+    bar(p.name, 'Cartella: ' + plantFolder(p.name), {
+      back: '/p',
+      actions: h('button', { class: 'ib', onclick: () => editPlant(p.name), 'aria-label': 'Modifica impianto' }, icon('edit')),
+    }),
+    h('div', { class: 'page' },
+      h('button', { class: 'btn acc block', style: { marginBottom: '12px' }, onclick: () => newReportSheet({ plant: p.name, from: p.reports[0] }) }, icon('plus'), 'Nuovo intervento su questo impianto'),
+      p.reports.length ? h('div', { class: 'card' }, h('div', { class: 'card-h' }, icon('list'), h('span', { class: 'grow' }, 'Interventi')), p.reports.map(r => reportRow(r, false))) : null,
+      items.size ? h('div', { class: 'card' },
+        h('div', { class: 'card-h' }, icon('chart'), h('span', { class: 'grow' }, 'Andamento valori')),
+        h('div', { class: 'card-b' }, field('Voce', sel), chartBox)) : null),
+  ];
+}
+function findItem(rep, id) {
+  for (const s of rep.tpl.sections) for (const it of s.items) if (it.id === id) return it;
+  return null;
+}
+function historyChart(rows, it) {
+  const pts = [];
+  rows.forEach((x, i) => {
+    const a = parseNum(x.v.a), pp = parseNum(x.v.p);
+    pts.push({ i, a: isNaN(a) ? null : a, p: isNaN(pp) ? null : pp, d: fmtDate(repDate(x.r)).slice(0, 5) });
+  });
+  const vals = [];
+  pts.forEach(q => { if (q.a != null) vals.push(q.a); if (q.p != null) vals.push(q.p); });
+  if (!vals.length) return h('div', { class: 'muted small', style: { marginTop: '12px' } }, 'Nessun valore numerico registrato per questa voce.');
+  if (hasNum(it.min)) vals.push(+it.min);
+  if (hasNum(it.max)) vals.push(+it.max);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const padv = (hi - lo) * 0.12; lo -= padv; hi += padv;
+  const W = 340, Hh = 190, L = 40, R = 10, T = 12, B = 30;
+  const n = pts.length;
+  const X = i => L + (n === 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1));
+  const Y = v => T + (hi - v) / (hi - lo) * (Hh - T - B);
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + Hh + '" class="chart" xmlns="http://www.w3.org/2000/svg" font-family="Roboto,sans-serif">';
+  if (hasNum(it.min) || hasNum(it.max)) {
+    const y1 = Y(hasNum(it.max) ? +it.max : hi), y2 = Y(hasNum(it.min) ? +it.min : lo);
+    svg += '<rect x="' + L + '" y="' + y1 + '" width="' + (W - L - R) + '" height="' + (y2 - y1) + '" fill="#2E7D32" opacity=".08"/>';
+  }
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (hi - lo) * k / 4, yy = Y(v);
+    svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" stroke="#E1E7EA"/>';
+    svg += '<text x="' + (L - 5) + '" y="' + (yy + 3.5) + '" font-size="10" text-anchor="end" fill="#7D8B91">' + fmtNum(+v.toPrecision(3)) + '</text>';
+  }
+  const path = (key, color, dash) => {
+    let d = '', started = false;
+    pts.forEach(q => { if (q[key] == null) return; d += (started ? 'L' : 'M') + X(q.i) + ' ' + Y(q[key]) + ' '; started = true; });
+    let s = d ? '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2.2"' + (dash ? ' stroke-dasharray="5 4"' : '') + '/>' : '';
+    pts.forEach(q => {
+      if (q[key] == null) return;
+      const bad = isAlert(it, q[key]);
+      s += '<circle cx="' + X(q.i) + '" cy="' + Y(q[key]) + '" r="3.6" fill="' + (bad ? '#C62828' : color) + '" stroke="#fff" stroke-width="1.2"/>';
+    });
+    return s;
+  };
+  svg += path('a', '#0B4F5C') + path('p', '#F2A93B', true);
+  const step = Math.max(1, Math.ceil(n / 6));
+  pts.forEach(q => { if (q.i % step === 0 || q.i === n - 1) svg += '<text x="' + X(q.i) + '" y="' + (Hh - 10) + '" font-size="10" text-anchor="' + (n > 1 && q.i === n - 1 ? 'end' : n > 1 && q.i === 0 ? 'start' : 'middle') + '" fill="#7D8B91">' + q.d + '</text>'; });
+  svg += '</svg>';
+  return h('div', null, h('div', { html: svg }),
+    h('div', { class: 'legend' }, h('span', null, h('i', { style: { background: '#0B4F5C' } }), 'Arrivo'), h('span', null, h('i', { style: { background: '#F2A93B' } }), 'Partenza'),
+      (hasNum(it.min) || hasNum(it.max)) ? h('span', null, h('i', { style: { background: '#2E7D32', opacity: '.3', height: '8px' } }), 'Riferimento') : null));
+}
+function historyTable(rows, it) {
+  return h('table', { class: 'htable' },
+    h('thead', null, h('tr', null, h('th', null, 'Data'), h('th', null, 'Arrivo'), h('th', null, 'Partenza'))),
+    h('tbody', null, rows.slice().reverse().map(x => h('tr', { onclick: () => go('/r/' + encodeURIComponent(x.r.id)) },
+      h('td', null, fmtDate(repDate(x.r))),
+      h('td', { class: isAlert(it, x.v.a) ? 'bad' : '' }, displayVal(it, x.v.a) || '—'),
+      h('td', { class: isAlert(it, x.v.p) ? 'bad' : '' }, displayVal(it, x.v.p) || '—')))));
+}
+
+/* ================================================================ IMPOSTAZIONI */
+function viewSettings() {
+  const st = S.settings;
+  const setv = (k, v) => { st[k] = v; DB.setSetting(k, v); };
+  const txt = (k, label, ph) => {
+    const el = h('input', { class: 'in', value: st[k] || '', placeholder: ph || '' });
+    el.addEventListener('input', () => setv(k, el.value));
+    return field(label, el);
+  };
+  const logoBox = h('div');
+  const paintLogo = () => {
+    logoBox.innerHTML = '';
+    if (S.logo) {
+      const u = URL.createObjectURL(S.logo.blob); objectUrls.push(u);
+      logoBox.appendChild(h('img', { class: 'logo-prev', src: u }));
+    }
+    logoBox.appendChild(h('div', { class: 'btns', style: { marginTop: '8px' } },
+      h('button', {
+        class: 'btn', onclick: async () => {
+          const l = await Native.pickImages('gallery', false).catch(e => { toast(e.message); return []; });
+          if (!l.length) return;
+          S.logo = l[0]; await DB.setSetting('logo', S.logo); paintLogo(); toast('Logo impostato');
+        },
+      }, icon('image'), S.logo ? 'Cambia logo' : 'Scegli logo'),
+      S.logo ? h('button', { class: 'btn red', onclick: async () => { S.logo = null; await DB.setSetting('logo', null); paintLogo(); } }, 'Rimuovi') : null));
+  };
+  paintLogo();
+  const swatches = h('div', { class: 'swatches' });
+  const paintSw = () => {
+    swatches.innerHTML = '';
+    for (const c of ACCENTS) swatches.appendChild(h('button', { class: 'sw' + (st.accent === c ? ' on' : ''), style: { background: c }, onclick: () => { setv('accent', c); paintSw(); } }));
+  };
+  paintSw();
+  const choiceChips = (k, opts) => {
+    const box = h('div', { class: 'chips', style: { marginTop: '4px' } });
+    const p = () => {
+      box.innerHTML = '';
+      for (const [v, l] of opts) box.appendChild(h('button', { class: 'chip' + (String(st[k]) === String(v) ? ' on' : ''), onclick: () => { setv(k, v); p(); } }, l));
+    };
+    p();
+    return box;
+  };
+  const pat = h('input', { class: 'in', value: st.filePattern });
+  const ex = h('div', { class: 'small muted', style: { marginTop: '5px' } });
+  const paintEx = () => {
+    const sample = S.reports.slice().sort(byDateDesc)[0];
+    ex.textContent = 'Esempio: ' + (sample ? fileBase(sample, st) : pat.value.replace('{impianto}', 'Impianto').replace('{data}', '26-10-2026').replace('{modello}', 'Checklist Controllo Torre Desolforazione').replace('{tecnico}', 'Mario Rossi')) + '.pdf';
+  };
+  pat.addEventListener('input', () => { setv('filePattern', pat.value || DEFAULT_SETTINGS.filePattern); paintEx(); });
+  paintEx();
+
+  return [
+    bar('Impostazioni', 'Versione ' + Native.version()),
+    h('div', { class: 'page with-nav' },
+      h('div', { class: 'card' }, h('div', { class: 'card-h' }, 'Dati predefiniti'),
+        h('div', { class: 'card-b' },
+          txt('tecnico', 'Nome del tecnico (precompilato nei nuovi report)', 'Es. Mario Rossi'),
+          txt('azienda', 'Azienda (mostrata nell\'intestazione del PDF)', 'Es. nome azienda'))),
+      h('div', { class: 'card' }, h('div', { class: 'card-h' }, 'Aspetto del report PDF'),
+        h('div', { class: 'card-b' },
+          group('Logo in alto a destra', logoBox),
+          group('Colore delle intestazioni', swatches),
+          group('Foto per riga nel PDF', choiceChips('photosPerRow', [[2, '2 (compatte)'], [1, '1 (grandi)']])),
+          h('label', { class: 'fld' }, h('span', null, 'Nome dei file'), pat),
+          h('div', { class: 'small muted' }, 'Puoi usare {impianto} {data} {modello} {tecnico}'),
+          ex,
+          group('Risoluzione JPEG', choiceChips('jpegDpi', [[120, 'Leggera'], [150, 'Standard'], [200, 'Alta']])))),
+      h('div', { class: 'card' }, h('div', { class: 'card-h' }, 'Cartella SharePoint'),
+        h('div', { class: 'card-b' },
+          h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Il pacchetto di ogni report contiene le cartelle Impianto › Anno › Mese › Giorno. Power Automate lo estrae dentro TORRI DI DESOLFORAZIONE e crea le cartelle che mancano.'),
+          txt('spInbox', 'Cartella dove carichi i pacchetti', '_CARICA QUI'),
+          txt('spSubject', 'Oggetto email per l\'invio dei pacchetti', 'REPORT TORRI'),
+          false ? txt('spEmail', 'Il tuo indirizzo email aziendale (destinatario dei pacchetti)', 'nome.cognome@…') : null,
+          txt('spLink', 'Link alla cartella TORRI DI DESOLFORAZIONE', 'https://…sharepoint.com/…'),
+          S.settings.spLink ? h('div', { class: 'btns' }, h('a', { class: 'btn', href: S.settings.spLink, target: '_blank', rel: 'noopener' }, icon('open'), 'Apri la cartella')) : null)),
+      h('div', { class: 'card' }, h('div', { class: 'card-h' }, 'Backup e trasferimento'),
+        h('div', { class: 'card-b' },
+          h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'I dati restano solo su questo dispositivo. Esporta un backup ogni tanto (report, foto, modelli, impianti e impostazioni) e conservalo su SharePoint o sul PC: serve anche per passare a un altro telefono.'),
+          st.lastBackup ? h('div', { class: 'small', style: { marginTop: '6px' } }, 'Ultimo backup: ' + new Date(st.lastBackup).toLocaleString('it-IT')) : null,
+          h('div', { class: 'btns' },
+            h('button', { class: 'btn pri', onclick: exportBackup }, icon('download'), 'Esporta backup'),
+            h('button', { class: 'btn', onclick: importFile }, icon('upload'), 'Importa')))),
+      h('div', { class: 'card' }, h('div', { class: 'card-h' }, 'Modelli'),
+        h('div', { class: 'card-b' },
+          h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Aggiunge di nuovo il modello originale «Checklist Controllo Torre Desolforazione» (utile se lo hai modificato troppo).'),
+          h('div', { class: 'btns' }, h('button', {
+            class: 'btn', onclick: async () => {
+              const t = defaultTemplate();
+              if (S.templates.some(x => x.id === t.id)) { t.id = 'tpl_' + uid(); t.name += ' (originale)'; }
+              S.templates.push(t); await DB.put('templates', t); toast('Modello aggiunto');
+            },
+          }, icon('refresh'), 'Ripristina modello originale')))),
+      h('div', { class: 'card' }, h('div', { class: 'card-b', style: { paddingTop: '12px' } },
+        h('div', { class: 'small muted' }, Native.isApp ? 'I file generati vengono salvati in Download › Report Impianti. Le foto scattate restano anche in Immagini › Report Impianti. I dati dell\'app restano su questo telefono: fai un backup ogni tanto.' : 'I file generati vengono salvati tra i download del telefono, dopo la conferma. I dati dell\'app restano in questo browser: non cancellare i dati di navigazione del sito e fai un backup ogni tanto.')))),
+    bottomNav('set'),
+  ];
+}
+
+/* ================================================================ BACKUP */
+function blobToB64(blob) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result).split(',')[1] || '');
+    fr.onerror = () => rej(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+function b64ToBlob(b64, type) {
+  const bin = atob(b64);
+  const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return new Blob([u], { type: type || 'image/jpeg' });
+}
+async function exportBackup() {
+  flushSaves();
+  const b = busy('Preparo il backup…');
+  try {
+    const settings = await DB.allSettings();
+    delete settings.logo;
+    const photos = await DB.all('photos');
+    const name = 'Backup Report Impianti ' + fmtDate(todayISO(), '-') + '.json';
+    const chunks = ['{"app":"ReportImpianti","kind":"backup","version":2,"exportedAt":' + Date.now() +
+      ',"settings":' + JSON.stringify(settings) +
+      ',"logo":' + (S.logo ? JSON.stringify({ w: S.logo.w, h: S.logo.h, data: await blobToB64(S.logo.blob) }) : 'null') +
+      ',"templates":' + JSON.stringify(S.templates) +
+      ',"reports":' + JSON.stringify(S.reports) + ',"photos":['];
+    for (let i = 0; i < photos.length; i++) {
+      const p = photos[i];
+      b.set('Backup foto ' + (i + 1) + ' di ' + photos.length);
+      chunks.push((i ? ',' : '') + JSON.stringify({ id: p.id, reportId: p.reportId, w: p.w, h: p.h, createdAt: p.createdAt, data: await blobToB64(p.blob) }));
+    }
+    chunks.push(']}');
+    b.done();
+    await Native.saveFile(new Blob(chunks, { type: 'application/json' }), name, 'application/json');
+    S.settings.lastBackup = Date.now();
+    await DB.setSetting('lastBackup', S.settings.lastBackup);
+    toast('Backup salvato: ' + S.reports.length + ' report, ' + photos.length + ' foto');
+    if (parts()[0] === 's') render();
+  } catch (e) {
+    b.done();
+    toast(e.message === 'Salvataggio annullato' ? e.message : 'Errore backup: ' + e.message);
+  }
+}
+async function importFile() {
+  let blob;
+  try { blob = await Native.pickFile(); } catch (e) { toast(e.message); return; }
+  if (!blob) return;
+  let data;
+  const b = busy('Leggo il file…');
+  try { data = JSON.parse(await blob.text()); } catch (e) { b.done(); toast('File non valido'); return; }
+  b.done();
+  if (!data || data.app !== 'ReportImpianti') { toast('Il file non è un backup o un modello di Report Impianti'); return; }
+  if (data.kind === 'template') {
+    const t = data.template;
+    if (S.templates.some(x => x.id === t.id)) {
+      const how = await ask('Modello già presente', '«' + t.name + '» esiste già. Vuoi sostituirlo o aggiungerlo come copia?',
+        [{ label: 'Annulla', value: false }, { label: 'Copia', value: 'copy' }, { label: 'Sostituisci', value: 'rep', cls: 'pri' }]);
+      if (!how) return;
+      if (how === 'copy') { t.id = 'tpl_' + uid(); t.name += ' (importato)'; }
+    }
+    await DB.put('templates', t);
+    S.templates = await DB.all('templates');
+    toast('Modello importato');
+    go('/t/' + encodeURIComponent(t.id));
+    return;
+  }
+  const ok = await ask('Importare il backup?', (data.reports || []).length + ' report, ' + (data.photos || []).length + ' foto e ' + (data.templates || []).length +
+    ' modelli. I dati già presenti con lo stesso identificativo verranno aggiornati, gli altri restano.', [{ label: 'Annulla', value: false }, { label: 'Importa', value: true, cls: 'pri' }]);
+  if (!ok) return;
+  const b2 = busy('Importo…');
+  try {
+    for (const t of data.templates || []) await DB.put('templates', t);
+    for (const r of data.reports || []) await DB.put('reports', r);
+    const ph = data.photos || [];
+    for (let i = 0; i < ph.length; i++) {
+      b2.set('Importo foto ' + (i + 1) + ' di ' + ph.length);
+      const p = ph[i];
+      await DB.put('photos', { id: p.id, reportId: p.reportId, w: p.w, h: p.h, createdAt: p.createdAt, blob: b64ToBlob(p.data) });
+    }
+    if (data.settings) for (const k in data.settings) await DB.setSetting(k, data.settings[k]);
+    if (data.logo) await DB.setSetting('logo', { w: data.logo.w, h: data.logo.h, blob: b64ToBlob(data.logo.data) });
+    await loadAll();
+    b2.done();
+    toast('Backup importato');
+    go('/');
+    render();
+  } catch (e) {
+    b2.done();
+    toast('Errore importazione: ' + e.message);
+  }
+}
+
+/* ================================================================ AVVIO */
+async function loadAll() {
+  S.templates = await DB.all('templates');
+  if (!S.templates.length) {
+    const t = defaultTemplate();
+    await DB.put('templates', t);
+    S.templates = [t];
+  }
+  S.templates.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  S.reports = await DB.all('reports');
+  const st = await DB.allSettings();
+  S.logo = st.logo || null;
+  delete st.logo;
+  S.plants = Array.isArray(st.plants) ? st.plants : [];
+  delete st.plants;
+  for (const r of S.reports) {
+    const n = repPlant(r);
+    if (n && !S.plants.some(p => norm(p.name) === norm(n))) S.plants.push({ id: 'pl' + uid(), name: n, folder: n, createdAt: Date.now() });
+  }
+  DB.setSetting('plants', S.plants);
+  S.settings = Object.assign({}, DEFAULT_SETTINGS, st);
+}
+(async function init() {
+  try {
+    await loadAll();
+  } catch (e) {
+    app.appendChild(h('div', { class: 'empty' }, h('b', null, 'Errore di avvio'), String(e && e.message)));
+    return;
+  }
+  try { history.replaceState({ p: '/' }, ''); } catch (e) { /* ignora */ }
+  render();
+})();
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+</script>
+</body>
+</html>

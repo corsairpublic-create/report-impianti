@@ -1,0 +1,30 @@
+{
+  "name": "Report Impianti",
+  "short_name": "Report Impianti",
+  "description": "Checklist torri di desolforazione: valori arrivo/partenza, foto prima/dopo, report PDF e pacchetto per SharePoint.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F5",
+  "theme_color": "#0B4F5C",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
